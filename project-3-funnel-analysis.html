@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Customer Funnel Analysis — RP Karthigayan</title>
+<meta name="description" content="User-level funnel analysis of 14,200 SaaS signups: eight steps, leakage by device and channel, cohort retention and a costed fix.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>:root{
+  --ink:#14202B; --ink2:#485A67; --ink3:#7C8B94;
+  --paper:#ECEDE8; --card:#FBFBFA; --rule:#C7CCC5; --rule2:#DEE1DB;
+  --signal:#1D3FD1; --leak:#C4462B; --gain:#157F6B; --amber:#B8830F;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --disp:"Bricolage Grotesque","Archivo",Helvetica,sans-serif;
+  --body:"Public Sans","Helvetica Neue",Arial,sans-serif;
+  --pad:clamp(18px,4vw,64px);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--body); font-size:16px; line-height:1.6;
+  font-variant-numeric:tabular-nums;
+  background-image:linear-gradient(var(--rule2) 1px,transparent 1px),linear-gradient(90deg,var(--rule2) 1px,transparent 1px);
+  background-size:64px 64px; background-position:-1px -1px;
+}
+.shell{max-width:1180px;margin:0 auto;padding:0 var(--pad)}
+a{color:inherit}
+h1,h2,h3,h4{font-family:var(--disp);font-weight:800;letter-spacing:-.03em;line-height:.98;margin:0}
+h1{font-size:clamp(38px,7.4vw,88px)}
+h2{font-size:clamp(26px,3.6vw,44px)}
+h3{font-size:clamp(18px,2vw,24px);letter-spacing:-.02em}
+p{margin:0 0 14px}
+/* ---------- utility type ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3)}
+.mono{font-family:var(--mono)}
+.lede{font-size:clamp(16px,1.55vw,19px);color:var(--ink2);max-width:62ch}
+.small{font-size:13px;color:var(--ink2)}
+.tiny{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink3)}
+/* ---------- top bar ---------- */
+.bar{position:sticky;top:0;z-index:40;background:rgba(236,237,232,.92);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.bar-in{max-width:1180px;margin:0 auto;padding:11px var(--pad);
+  display:flex;align-items:center;justify-content:space-between;gap:16px}
+.bar-name{font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:-.01em}
+.bar-nav{display:flex;gap:20px;font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+.bar-nav a{text-decoration:none;color:var(--ink2);padding-bottom:2px;border-bottom:1px solid transparent}
+.bar-nav a:hover{color:var(--ink);border-bottom-color:var(--signal)}
+@media(max-width:720px){.bar-nav{display:none}}
+/* ---------- calibration rule (structural signature) ---------- */
+.calib{height:26px;border-top:1px solid var(--ink);position:relative;margin:0}
+.calib::before{content:"";position:absolute;inset:0 0 auto 0;height:9px;
+  background-image:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 24px)}
+.calib::after{content:"";position:absolute;inset:0 0 auto 0;height:16px;
+  background-image:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 120px)}
+/* ---------- sections ---------- */
+.sec{padding:clamp(46px,6vw,86px) 0 0}
+.sec-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:26px}
+.sec-head .eyebrow{padding-top:6px}
+/* ---------- cards ---------- */
+.card{background:var(--card);border:1px solid var(--rule);padding:clamp(18px,2.4vw,28px)}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr}}
+/* ---------- readouts ---------- */
+.readout{background:var(--card);border:1px solid var(--rule);padding:14px 16px 12px;position:relative}
+.readout .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink3);display:block;margin-bottom:8px}
+.readout .v{font-family:var(--disp);font-weight:800;font-size:clamp(24px,2.9vw,34px);
+  letter-spacing:-.035em;line-height:1;display:block}
+.readout .n{font-family:var(--mono);font-size:11px;color:var(--ink2);margin-top:7px;display:block}
+.readout::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--signal)}
+.readout.leak::after{background:var(--leak)}
+.readout.gain::after{background:var(--gain)}
+.readout.amber::after{background:var(--amber)}
+.d-up{color:var(--gain)} .d-dn{color:var(--leak)}
+/* ---------- chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  border:1px solid var(--rule);padding:4px 8px;color:var(--ink2);background:transparent}
+.chip.on{border-color:var(--ink);color:var(--ink)}
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;border:1px solid var(--rule);background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px}
+thead th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  text-align:right;color:var(--ink3);padding:11px 12px;border-bottom:1px solid var(--ink);white-space:nowrap}
+thead th:first-child{text-align:left}
+tbody td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--rule2);
+  font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+tbody td:first-child{text-align:left;font-family:var(--body);font-size:13.5px;font-weight:500}
+tbody tr:hover{background:#F2F3EE}
+tbody tr.hl{background:#FBF2EF}
+tbody tr.hl td:first-child{box-shadow:inset 3px 0 0 var(--leak)}
+.pill{font-family:var(--mono);font-size:10.5px;padding:2px 7px;border:1px solid currentColor}
+.pill.ok{color:var(--gain)} .pill.miss{color:var(--leak)} .pill.watch{color:var(--amber)}
+/* ---------- charts ---------- */
+.chart{background:var(--card);border:1px solid var(--rule);padding:18px 18px 12px}
+.chart h3{font-size:16px;letter-spacing:-.01em}
+.chart .sub{font-size:12.5px;color:var(--ink2);margin:6px 0 14px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.legend i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+text{font-family:var(--mono);fill:var(--ink2)}
+.ax{font-size:10px;letter-spacing:.04em}
+.vlab{font-size:10.5px;fill:var(--ink);font-weight:500}
+/* ---------- notes / insight blocks ---------- */
+.note{border-left:2px solid var(--signal);padding:2px 0 2px 16px;margin:16px 0}
+.note.leak{border-color:var(--leak)}
+.ins{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--rule2)}
+.ins:last-child{border-bottom:0}
+.ins-n{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--signal);
+  padding-top:4px;min-width:34px}
+.ins-b h4{font-family:var(--disp);font-size:17px;margin-bottom:5px}
+.ins-b p{margin:0;font-size:14.5px;color:var(--ink2)}
+.ins-b b{color:var(--ink);font-family:var(--mono);font-size:13.5px;font-weight:600}
+/* ---------- brief block ---------- */
+.brief{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;
+  border:1px solid var(--rule);background:var(--card)}
+.brief>div{padding:16px 18px;border-right:1px solid var(--rule2)}
+.brief>div:last-child{border-right:0}
+.brief dt{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:7px}
+.brief dd{margin:0;font-size:13.5px;color:var(--ink)}
+@media(max-width:860px){.brief{grid-template-columns:repeat(2,1fr)}
+  .brief>div{border-bottom:1px solid var(--rule2)}}
+@media(max-width:520px){.brief{grid-template-columns:1fr}}
+/* ---------- footer ---------- */
+footer{margin-top:clamp(56px,7vw,96px);border-top:1px solid var(--ink);
+  padding:34px 0 46px;background:transparent}
+/* ---------- links ---------- */
+.link{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;
+  text-decoration:none;border-bottom:1px solid var(--signal);padding-bottom:2px;color:var(--ink)}
+.link:hover{background:#E3E6F7}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--card);
+  background:var(--ink);padding:11px 16px;border:1px solid var(--ink)}
+.btn:hover{background:var(--signal);border-color:var(--signal)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--card)}
+:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
+.sim{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--amber);border:1px solid var(--amber);padding:3px 8px;display:inline-block}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ── project flow nav ───────────────────────────────────────────── */
+.flow{border-top:1px solid var(--ink);border-bottom:1px solid var(--rule);
+  margin:clamp(24px,3.4vw,38px) 0 0;padding:14px 0;display:flex;gap:16px;align-items:flex-start}
+.flow-l{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink3);flex:0 0 auto;padding-top:5px}
+.flow ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 8px}
+.flow li{margin:0}
+.flow a{display:inline-flex;align-items:baseline;gap:6px;text-decoration:none;
+  border:1px solid var(--rule2);background:var(--card);padding:5px 9px;
+  font-size:12.5px;color:var(--ink2);transition:border-color .15s,color .15s,background .15s}
+.flow a i{font-family:var(--mono);font-style:normal;font-size:9.5px;color:var(--ink3);letter-spacing:.06em}
+.flow a:hover{border-color:var(--signal);color:var(--signal);background:#fff}
+.flow a:hover i{color:var(--signal)}
+@media(max-width:700px){.flow{flex-direction:column;gap:9px}.flow-l{padding-top:0}}
+
+/* ── materials & assets tiles ───────────────────────────────────── */
+.assets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule)}
+.asset{display:grid;grid-template-columns:52px 1fr;gap:14px;background:var(--card);
+  padding:17px 18px;text-decoration:none;position:relative;transition:background .15s}
+.asset:hover{background:#fff}
+.asset .ax{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--paper);background:var(--ink);height:26px;
+  display:flex;align-items:center;justify-content:center;border-radius:1px}
+.asset.sql .ax{background:var(--signal)}
+.asset.xlsx .ax{background:var(--gain)}
+.asset.csv .ax{background:var(--ink2)}
+.asset.doc .ax{background:var(--amber)}
+.asset.page .ax{background:var(--leak)}
+.asset b{display:block;font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--ink);
+  letter-spacing:-.01em;word-break:break-all;margin-bottom:6px}
+.asset i{display:block;font-style:normal;font-size:13px;line-height:1.5;color:var(--ink2)}
+.asset .aa{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);margin-top:9px}
+.asset:hover .aa{color:var(--signal)}
+.asset:hover b{color:var(--signal)}
+@media(max-width:760px){.assets{grid-template-columns:1fr}}
+
+/* ── prev / next project ────────────────────────────────────────── */
+.pnav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--rule);
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--rule);margin-top:clamp(34px,5vw,60px)}
+.pnav a{background:var(--card);padding:22px 22px 24px;text-decoration:none;transition:background .15s}
+.pnav a:hover{background:#fff}
+.pnav a.nx{text-align:right}
+.pnav .d{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink3);display:block;margin-bottom:9px}
+.pnav .t{font-family:var(--disp);font-weight:600;font-size:clamp(17px,2.1vw,22px);letter-spacing:-.02em;
+  color:var(--ink);display:block;line-height:1.22}
+.pnav a:hover .t{color:var(--signal)}
+.pnav a:hover .d{color:var(--signal)}
+@media(max-width:620px){.pnav{grid-template-columns:1fr}.pnav a.nx{text-align:left}}
+
+/* ── primary button additions ───────────────────────────────────── */
+.btn .ar{font-family:var(--mono);font-size:12px;line-height:1}
+.btn.lg{font-size:12.5px;padding:12px 19px;letter-spacing:.05em}
+
+/* ── rendered document page ─────────────────────────────────────── */
+.doc{max-width:74ch;padding-top:clamp(26px,4vw,46px)}
+.doc h1{font-size:clamp(30px,4.6vw,52px);margin-bottom:20px}
+.doc h2{font-family:var(--disp);font-weight:700;font-size:clamp(21px,2.7vw,29px);letter-spacing:-.025em;
+  margin:44px 0 14px;padding-top:16px;border-top:1px solid var(--rule)}
+.doc h3{font-family:var(--disp);font-weight:600;font-size:clamp(16px,1.9vw,19px);margin:28px 0 10px}
+.doc h4{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink3);margin:22px 0 8px}
+.doc p{font-size:15px;line-height:1.66;color:var(--ink2);margin-bottom:14px}
+.doc li{font-size:14.5px;line-height:1.62;color:var(--ink2);margin-bottom:7px}
+.doc ul,.doc ol{padding-left:20px;margin-bottom:16px}
+.doc strong{color:var(--ink);font-weight:600}
+.doc code{font-family:var(--mono);font-size:12.5px;background:var(--rule2);padding:1px 5px}
+.doc table{width:100%;border-collapse:collapse;margin:18px 0;font-size:13px}
+.doc th{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  text-align:left;color:var(--ink3);border-bottom:1px solid var(--ink);padding:9px 10px 8px}
+.doc td{border-bottom:1px solid var(--rule2);padding:9px 10px;color:var(--ink2);vertical-align:top}
+.doc td:not(:first-child){font-family:var(--mono);font-size:12.5px}
+.doc blockquote{border-left:2px solid var(--signal);margin:18px 0;padding:2px 0 2px 16px}
+.doc blockquote p{margin-bottom:0;color:var(--ink)}
+.doc hr{border:0;border-top:1px solid var(--rule);margin:34px 0}
+
+/* ---------- HTML bar charts: readable labels at every width ---------- */
+.bars{display:flex;flex-direction:column;gap:13px;margin-top:4px}
+.brow{display:grid;grid-template-columns:1fr;gap:5px}
+.blab{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.blab span:first-child{font-size:13.5px;font-weight:500}
+.blab span:last-child{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+.btrack{position:relative;height:14px;background:#E9EBE5;border:1px solid var(--rule2)}
+.bfill{position:absolute;left:0;top:0;bottom:0;background:var(--signal);
+  transform-origin:left center;animation:grow .7s cubic-bezier(.2,.8,.25,1) both}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.bnote{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.bref{position:absolute;top:-4px;bottom:-4px;width:1px;background:var(--ink);z-index:2}
+.bref b{position:absolute;left:4px;top:-15px;font-family:var(--mono);font-size:9.5px;
+  font-weight:500;letter-spacing:.06em;color:var(--ink);white-space:nowrap;text-transform:uppercase}
+/* funnel */
+.fun{display:flex;flex-direction:column;gap:0;margin-top:6px}
+.fstep{padding:11px 0 12px;border-bottom:1px solid var(--rule2)}
+.fstep:last-child{border-bottom:0}
+.fhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.fhead .fl{font-size:14px;font-weight:500}
+.fhead .fr{font-family:var(--mono);font-size:12px;color:var(--ink2)}
+.ftrack{position:relative;height:20px;background:#E9EBE5;border:1px solid var(--rule2)}
+.ffill{position:absolute;left:0;top:0;bottom:0;background:var(--ink);
+  animation:grow .8s cubic-bezier(.2,.8,.25,1) both;transform-origin:left}
+.fstep.hot .ffill{background:var(--leak)}
+.fdrop{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,#DCDFD8 0 4px,#E9EBE5 4px 8px)}
+.fdlab{font-family:var(--mono);font-size:11px;margin-top:6px;color:var(--ink3)}
+.fstep.hot .fdlab{color:var(--leak)}
+/* paired bars */
+.pair{display:flex;flex-direction:column;gap:14px;margin-top:4px}
+.prow .plab{font-size:13.5px;font-weight:500;margin-bottom:5px}
+.pline{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.pline .pt{position:relative;flex:1;height:11px;background:#E9EBE5;border:1px solid var(--rule2)}
+.pline .pf{position:absolute;inset:0 auto 0 0;animation:grow .7s cubic-bezier(.2,.8,.25,1) both;transform-origin:left}
+.pline .pv{font-family:var(--mono);font-size:11.5px;min-width:52px;text-align:right}
+.pline .pk{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink3);min-width:74px}
+/* heat cells */
+.heat td b{display:block;padding:3px 6px;font-weight:500}
+
+.phead{padding:clamp(30px,4.5vw,54px) 0 0}
+.phead h1{font-size:clamp(32px,5.4vw,62px);max-width:22ch;margin-bottom:18px}
+.crumb{display:flex;gap:10px;align-items:center;margin-bottom:20px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.crumb a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--rule)}
+.crumb a:hover{color:var(--signal);border-color:var(--signal)}
+.charts{display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.charts .wide{grid-column:1/-1}
+@media(max-width:820px){.charts{grid-template-columns:1fr}}
+.oppo{border:1px solid var(--leak);background:#FBF3F1;padding:clamp(20px,2.6vw,30px)}
+.oppo h3{font-size:clamp(20px,2.6vw,30px);margin-bottom:12px;max-width:30ch}
+.oppo .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#E4CFC9;
+  border:1px solid #E4CFC9;margin:18px 0 14px}
+.oppo .row>div{background:#FDF8F7;padding:15px 17px}
+.oppo .k{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:#96604F;display:block;margin-bottom:8px}
+.oppo .v{font-family:var(--disp);font-weight:800;font-size:clamp(24px,3.1vw,36px);letter-spacing:-.04em;
+  line-height:1;display:block;color:var(--leak)}
+@media(max-width:700px){.oppo .row{grid-template-columns:1fr}}
+.rec td:nth-child(2){text-align:left;font-family:var(--body);font-size:13.5px;white-space:normal;min-width:220px}
+.rec td:first-child{white-space:normal}
+ul.plain{margin:0;padding-left:18px}
+ul.plain li{font-size:14px;color:var(--ink2);margin-bottom:7px}
+</style>
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <span class="bar-name">RP Karthigayan</span>
+  <nav class="bar-nav"><a href="index.html">← Portfolio</a>
+    <a href="project-1-gtm-launch.html">P1 GTM</a><a href="project-2-marketing-analytics.html">P2 Analytics</a></nav>
+</div></header>
+
+<main>
+<section class="phead shell">
+  <div class="crumb"><a href="index.html">Portfolio</a><span>/</span><span>Project 3</span>
+    <span class="sim" style="margin-left:6px">Simulated dataset</span></div>
+  <p class="eyebrow">Growth analytics · Product funnel · 14,200 signups · 6 cohorts</p>
+  <h1>Half the users who reach step three never come back.</h1>
+  <p class="lede">An eight-step funnel from signup to day-90 retention, analysed at user level and
+  cut by acquisition channel, device, account type and onboarding path. The largest single loss is
+  not pricing and not onboarding content — it is one integration screen, and it is worth
+  $300k a year.</p>
+</section>
+
+<nav class="flow shell" aria-label="Project flow">
+  <span class="flow-l">Project flow</span>
+  <ol>
+    <li><a href="#the-funnel"><i>01</i>The funnel</a></li>
+    <li><a href="#where-it-breaks-and-for-whom"><i>02</i>Where it breaks, and for whom</a></li>
+    <li><a href="#activation-is-the-hinge"><i>03</i>Activation is the hinge</a></li>
+    <li><a href="#cohorts"><i>04</i>Cohorts</a></li>
+    <li><a href="#the-costed-fix"><i>05</i>The costed fix</a></li>
+    <li><a href="#recommendations"><i>06</i>Recommendations</a></li>
+    <li><a href="#method-and-honesty-notes"><i>07</i>Method &amp; honesty notes</a></li>
+    <li><a href="#materials-and-assets-used"><i>08</i>Materials &amp; assets used</a></li>
+  </ol>
+</nav>
+
+<section class="sec shell">
+  <dl class="brief">
+    <div><dt>Business problem</dt><dd>Signup volume was growing but paid conversion sat flat at
+      7.00%. Marketing was blamed for lead quality before anyone measured the product funnel.</dd></div>
+    <div><dt>Objective</dt><dd>Locate the largest drop-off, prove what causes it, and size the
+      revenue available from fixing it.</dd></div>
+    <div><dt>Dataset</dt><dd>14,200 user rows: eight funnel flags, signup cohort, channel,
+      device, account segment, onboarding path, days to activation, MRR.</dd></div>
+    <div><dt>Tools</dt><dd>SQL for the funnel and cohort logic, Python for segment tests and
+      sizing, hand-built dashboard for the read-out.</dd></div>
+  </dl>
+</section>
+
+<section class="sec shell">
+  <div class="grid g4">
+    <div class="readout"><span class="k">Signups analysed</span><span class="v">14,200</span>
+      <span class="n">Feb – Jul 2026, six cohorts</span></div>
+    <div class="readout amber"><span class="k">Activation rate</span><span class="v">29.4%</span>
+      <span class="n">First report published</span></div>
+    <div class="readout"><span class="k">Signup → paid</span><span class="v">7.00%</span>
+      <span class="n">994 paying accounts</span></div>
+    <div class="readout leak"><span class="k">Worst single step</span><span class="v">−49.5%</span>
+      <span class="n">5,208 users lost at one screen</span></div>
+  </div>
+</section>
+
+<section class="sec shell" id="the-funnel">
+  <div class="sec-head"><h2>The funnel</h2>
+    <span class="eyebrow">Shaded area = users lost at that step</span></div>
+  <div class="chart"><div id="c-funnel"></div>
+    <p class="bnote" style="margin-top:12px">Teammate invitation is tracked separately rather than as
+    a funnel gate, because accounts can invite at any point — treating it as a step would have
+    inflated every conversion rate below it.</p></div>
+</section>
+
+<section class="sec shell" id="where-it-breaks-and-for-whom">
+  <div class="sec-head"><h2>Where it breaks, and for whom</h2>
+    <span class="eyebrow">Same step, four different cuts</span></div>
+  <div class="charts">
+    <div class="chart"><h3>Step-by-step conversion</h3>
+      <p class="sub">Conversion from the previous step. Anything under 60% is a design problem, not
+      a user-intent problem.</p>
+      <div id="c-steps"></div></div>
+    <div class="chart"><h3>Listing connection by device</h3>
+      <p class="sub">The clearest signal in the dataset: the same step, split by the device the user
+      signed up on.</p>
+      <div id="c-device"></div>
+      <div class="note leak" style="margin:14px 0 0"><p style="margin:0;font-size:13.5px">
+        Mobile users complete the integration at 37.1% against 58.1% on desktop — a
+        21-point gap on an OAuth flow that was never designed for a small screen.</p></div></div>
+    <div class="chart"><h3>Onboarding path: activation and paid conversion</h3>
+      <p class="sub">Guided setup covers only 22% of signups today.</p>
+      <div id="c-onboard"></div></div>
+    <div class="chart"><h3>Median days to activation</h3>
+      <p class="sub">Guided accounts reach first value 1.7 days faster.</p>
+      <div id="c-tta"></div></div>
+  </div>
+</section>
+
+<section class="sec shell" id="activation-is-the-hinge">
+  <div class="sec-head"><h2>Activation is the hinge</h2><span class="eyebrow">Why the leak costs so much</span></div>
+  <div class="grid g2" style="align-items:start">
+    <div class="card">
+      <div class="ins" style="border:0;padding-top:0"><span class="ins-n">→</span><div class="ins-b">
+        <h4>Accounts that activate convert at 20.3%</h4>
+        <p>Accounts that never publish a first report convert at <b>1.5%</b>. That is a
+        14× difference, and it means every user lost before activation is lost revenue,
+        not just a lost step.</p></div></div>
+      <div class="ins" style="border:0"><span class="ins-n">→</span><div class="ins-b">
+        <h4>Paying accounts with a teammate retain at 91.7%</h4>
+        <p>Against <b>76.3%</b> for solo accounts. Only 26.9% of all signups ever
+        invite anyone, so this is an under-used retention lever.</p></div></div>
+    </div>
+    <div class="chart"><h3>Paid conversion by acquisition channel</h3>
+      <p class="sub">Read alongside the spend analysis — the cheapest traffic is not the
+      best-converting traffic.</p>
+      <div id="c-chan"></div></div>
+  </div>
+</section>
+
+<section class="sec shell" id="cohorts">
+  <div class="sec-head"><h2>Cohorts</h2><span class="eyebrow">Is it getting better on its own? No.</span></div>
+  <div class="tw"><table id="t-cohort" class="heat">
+    <thead><tr><th>Signup cohort</th><th>Signups</th><th>Verified</th><th>Listing connected</th>
+      <th>Activated</th><th>Paid</th><th>Retained D90</th></tr></thead><tbody></tbody></table></div>
+  <p class="tiny" style="margin-top:10px">Six consecutive monthly cohorts. The listing-connection
+  rate is stable across all of them, which rules out a one-off incident and points to a persistent
+  design problem.</p>
+</section>
+
+<section class="sec shell" id="the-costed-fix">
+  <div class="sec-head"><h2>The costed fix</h2><span class="eyebrow">Conservative sizing</span></div>
+  <div class="oppo">
+    <p class="eyebrow" style="color:#96604F;margin-bottom:10px">Opportunity</p>
+    <h3>A 10-point improvement at one step is worth $300k in annualised revenue.</h3>
+    <p style="font-size:14.5px;color:#5E4038;max-width:70ch">10,518 users reach the
+    listing-connection step in six months and 5,208 of them fail it. Recovering 10 points of
+    that — not the whole gap — carries 168 additional paying accounts through the rest of
+    the funnel at the rates observed in the data.</p>
+    <div class="row">
+      <div><span class="k">Additional paying accounts</span><span class="v">+168</span></div>
+      <div><span class="k">Added MRR</span><span class="v">$25k</span></div>
+      <div><span class="k">Annualised</span><span class="v">$300k</span></div>
+    </div>
+    <p class="tiny" style="color:#96604F;margin:0">Sizing uses the observed post-step conversion
+    rate and the activated-only paid conversion rate of 20.3%, so it excludes
+    sales-assisted deals that skip activation. Assumes cohort volume holds.</p>
+  </div>
+</section>
+
+<section class="sec shell" id="recommendations">
+  <div class="sec-head"><h2>Recommendations</h2><span class="eyebrow">Ranked by effort against effect</span></div>
+  <div class="tw"><table class="rec">
+    <thead><tr><th>Recommendation</th><th>Evidence in the data</th><th>Expected effect</th><th>Effort</th></tr></thead>
+    <tbody>
+      <tr><td>Rebuild the listing-connection step for mobile, and allow "skip and connect later"</td>
+        <td>Mobile completes at 37.1% vs 58.1% on desktop; 5,208 users lost at this step.</td>
+        <td>Up to +168 paying accounts per 10 points recovered</td><td>High</td></tr>
+      <tr><td>Let users reach first value before the integration is required</td>
+        <td>Activated accounts convert 14× better; the integration currently blocks activation.</td>
+        <td>Raises activation from 29.4%</td><td>Medium</td></tr>
+      <tr><td>Extend guided setup beyond 22% of signups, triggered by segment value</td>
+        <td>Guided activation 47.8% vs 24.1% self-serve; paid 11.8% vs 5.6%.</td>
+        <td>Highest-confidence lever in the dataset</td><td>Medium</td></tr>
+      <tr><td>Prompt a teammate invite inside the first successful report</td>
+        <td>D90 retention 91.7% with a teammate vs 76.3% without; only 26.9% invite.</td>
+        <td>Retention, not acquisition</td><td>Low</td></tr>
+      <tr><td>Cap Meta spend until its signup quality improves</td>
+        <td>Meta signups activate at 12.8% and convert at 2.9% — the weakest of six channels.</td>
+        <td>Better blended CAC</td><td>Low</td></tr>
+    </tbody></table></div>
+</section>
+
+<section class="sec shell" id="method-and-honesty-notes">
+  <div class="sec-head"><h2>Method &amp; honesty notes</h2><span class="eyebrow">How the numbers were produced</span></div>
+  <div class="grid g2">
+    <div class="card"><p class="eyebrow" style="margin-bottom:11px">Approach</p>
+      <ul class="plain">
+        <li>User-level table generated with conditional step probabilities, so segment effects
+          compound the way they do in a real product.</li>
+        <li>Funnel, step conversion, segment cuts and cohorts all computed from one SQL pattern so
+          the totals reconcile.</li>
+        <li>Sizing built on observed downstream rates rather than a target, and deliberately set at
+          10 points rather than closing the whole gap.</li>
+      </ul></div>
+    <div class="card"><p class="eyebrow" style="margin-bottom:11px">Limits of this analysis</p>
+      <ul class="plain">
+        <li>Simulated dataset, published so the full analysis can be inspected.</li>
+        <li>Segment differences here are correlational. The device finding needs a real experiment
+          before anyone spends engineering time on it.</li>
+        <li>Six cohorts is enough for D90 on the earliest ones only; later cohorts are censored.</li>
+        <li>No pricing-page or in-app event data, so intent inside the step is invisible.</li>
+      </ul></div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px">
+    <a class="btn" href="funnel_analysis.sql">SQL queries</a>
+    <a class="btn ghost" href="product_funnel_users.csv">Dataset (CSV)</a>
+    <a class="btn ghost" href="project-2-marketing-analytics.html">Spend analysis →</a>
+    <a class="btn ghost" href="index.html">Back to portfolio</a>
+  </div>
+</section>
+
+<section class="sec shell" id="materials-and-assets-used">
+  <div class="sec-head"><h2>Materials &amp; assets used</h2><span class="eyebrow">Open or download anything below</span></div>
+  <p class="lede" style="margin-bottom:22px">The queries and the user-level dataset. Every figure on this page comes out of these two files.</p>
+  <div class="assets">
+  <a class="asset sql" href="funnel_analysis.sql">
+    <span class="ax">SQL</span>
+    <span class="ab"><b>funnel_analysis.sql</b><i>Eight queries: the eight-step funnel with three denominators and an automatic leak flag, segment cuts, cohort stability, the activation hinge, PERCENTILE_CONT time-to-value, teammate retention, opportunity sizing and a monitoring view.</i><span class="aa">Open →</span></span>
+  </a>
+  <a class="asset csv" href="product_funnel_users.csv">
+    <span class="ax">CSV</span>
+    <span class="ab"><b>product_funnel_users.csv</b><i>User-level funnel data: 14,200 rows, one per signup, with channel, device, account type, onboarding path and every step reached.</i><span class="aa">Download →</span></span>
+  </a>
+  <a class="asset doc" href="README.md">
+    <span class="ax">MD</span>
+    <span class="ab"><b>README.md</b><i>Repository overview: what each project answers, the headline results, and how the datasets were generated.</i><span class="aa">Open →</span></span>
+  </a>
+  </div>
+</section>
+
+<div class="shell"><nav class="pnav" aria-label="More projects">
+  <a class="pv" href="project-2-marketing-analytics.html"><span class="d">← Previous project</span><span class="t">P2 · Marketing performance dashboard</span></a>
+  <a class="nx" href="project-1-gtm-launch.html"><span class="d">Next project →</span><span class="t">P1 · Reputation AI go-to-market</span></a>
+</nav></div>
+</main>
+
+<footer><div class="shell">
+  <p class="eyebrow" style="margin-bottom:8px">RP Karthigayan · Marketing operations &amp; growth analytics</p>
+  <p class="small" style="margin:0">karthickoffical2009@gmail.com · +91 7448958006 · Chennai, India</p>
+  <p class="tiny" style="margin-top:22px">Simulated dataset, real method. Every figure on this page
+  is computed from product_funnel_users.csv.</p>
+</div></footer>
+
+<script>/* Chart renderers — no external libraries.
+   SVG charts are drawn at true container width so label sizes stay honest. */
+const C = {signal:'#1D3FD1', leak:'#C4462B', gain:'#157F6B', amber:'#B8830F',
+           ink:'#14202B', ink2:'#485A67', ink3:'#7C8B94', rule:'#C7CCC5', rule2:'#DEE1DB'};
+
+const F = {
+  usd:  v => '$' + Math.round(v).toLocaleString('en-US'),
+  usd2: v => '$' + v.toFixed(2),
+  usdk: v => v >= 1000000 ? '$' + (v/1000000).toFixed(2) + 'M'
+            : v >= 1000 ? '$' + Math.round(v/1000) + 'k' : '$' + Math.round(v),
+  n:    v => Math.round(v).toLocaleString('en-US'),
+  nk:   v => v >= 1000000 ? (v/1000000).toFixed(1) + 'M'
+            : v >= 1000 ? (v/1000).toFixed(1) + 'k' : String(Math.round(v)),
+  pct:  v => v.toFixed(1) + '%',
+  pct2: v => v.toFixed(2) + '%',
+  x:    v => v.toFixed(2) + 'x',
+  mo:   v => v.toFixed(1) + ' mo'
+};
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const nice = m => { const p = Math.pow(10, Math.floor(Math.log10(m))); return Math.ceil(m/p*2)/2*p; };
+
+/* ---------------- SVG: bars on left axis + line on right axis ---------------- */
+function comboChart(node, o){
+  const W = Math.max(node.clientWidth, 300), H = o.height || 300;
+  const m = {t:24, r:o.line ? 52 : 14, b:38, l:52};
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const n = o.labels.length;
+  const bMax = nice(Math.max(...o.bars.values)), lMax = o.line ? nice(Math.max(...o.line.values)) : 1;
+  const lMin = o.line ? (o.lineZero ? 0 : Math.min(...o.line.values) * 0.72) : 0;
+  const bw = iw / n, pad = bw * 0.24;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||o.title||'chart')}">`;
+  for (let i = 0; i <= 4; i++){
+    const y = m.t + ih - ih * i / 4;
+    s += `<line x1="${m.l}" y1="${y}" x2="${m.l+iw}" y2="${y}" stroke="${i?C.rule2:C.ink}" stroke-width="1"/>`;
+    s += `<text class="ax" x="${m.l-8}" y="${y+3.5}" text-anchor="end">${o.barFmt(bMax*i/4)}</text>`;
+    if (o.line) s += `<text class="ax" x="${m.l+iw+8}" y="${y+3.5}" fill="${o.line.color}">${o.lineFmt(lMin+(lMax-lMin)*i/4)}</text>`;
+  }
+  o.bars.values.forEach((v,i) => {
+    const h = ih * v / bMax, x = m.l + bw*i + pad, y = m.t + ih - h;
+    s += `<rect x="${x}" y="${y}" width="${bw-pad*2}" height="${Math.max(h,1)}" fill="${o.bars.color}" opacity=".82"/>`;
+  });
+  if (o.line){
+    const pts = o.line.values.map((v,i) =>
+      [m.l + bw*i + bw/2, m.t + ih - ih*(v-lMin)/(lMax-lMin)]);
+    s += `<polyline fill="none" stroke="${o.line.color}" stroke-width="2"
+           points="${pts.map(p=>p.join(',')).join(' ')}"/>`;
+    pts.forEach(p => s += `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#FBFBFA" stroke="${o.line.color}" stroke-width="1.8"/>`);
+  }
+  const every = W < 520 ? 3 : (W < 760 ? 2 : 1);
+  o.labels.forEach((l,i) => { if (i % every === 0)
+    s += `<text class="ax" x="${m.l+bw*i+bw/2}" y="${m.t+ih+16}" text-anchor="middle">${esc(l)}</text>`; });
+  return s + '</svg>';
+}
+
+/* ---------------- SVG: single line vs a target band ---------------- */
+function lineTarget(node, o){
+  const W = Math.max(node.clientWidth, 300), H = o.height || 270;
+  const m = {t:22, r:16, b:36, l:46};
+  const iw = W-m.l-m.r, ih = H-m.t-m.b, n = o.values.length;
+  const max = nice(Math.max(...o.values, o.target) * 1.06), min = 0;
+  const X = i => m.l + (n === 1 ? iw/2 : iw*i/(n-1));
+  const Y = v => m.t + ih - ih*(v-min)/(max-min);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||'trend')}">`;
+  for (let i = 0; i <= 4; i++){
+    const y = m.t+ih-ih*i/4;
+    s += `<line x1="${m.l}" y1="${y}" x2="${m.l+iw}" y2="${y}" stroke="${i?C.rule2:C.ink}"/>`
+      +  `<text class="ax" x="${m.l-8}" y="${y+3.5}" text-anchor="end">${o.fmt(max*i/4)}</text>`;
+  }
+  s += `<line x1="${m.l}" y1="${Y(o.target)}" x2="${m.l+iw}" y2="${Y(o.target)}"
+         stroke="${C.amber}" stroke-width="1.5" stroke-dasharray="5 4"/>`
+    +  `<text class="vlab" x="${m.l+iw}" y="${Y(o.target)-7}" text-anchor="end" fill="${C.amber}">TARGET ${o.fmt(o.target)}</text>`;
+  const pts = o.values.map((v,i) => [X(i), Y(v)]);
+  s += `<polygon fill="${o.color||C.signal}" opacity=".10" points="${m.l},${m.t+ih} ${pts.map(p=>p.join(',')).join(' ')} ${m.l+iw},${m.t+ih}"/>`;
+  s += `<polyline fill="none" stroke="${o.color||C.signal}" stroke-width="2.2" points="${pts.map(p=>p.join(',')).join(' ')}"/>`;
+  pts.forEach((p,i) => { if (i === pts.length-1 || i % (n>10?3:1) === 0)
+    s += `<circle cx="${p[0]}" cy="${p[1]}" r="3.2" fill="#FBFBFA" stroke="${o.color||C.signal}" stroke-width="1.8"/>`; });
+  const every = W < 520 ? 3 : 2;
+  o.labels.forEach((l,i) => { if (i % every === 0 || i === n-1)
+    s += `<text class="ax" x="${X(i)}" y="${m.t+ih+16}" text-anchor="middle">${esc(l)}</text>`; });
+  return s + '</svg>';
+}
+
+/* ---------------- SVG: grouped vertical bars ---------------- */
+function groupBars(node, o){
+  const W = Math.max(node.clientWidth, 300), H = o.height || 260;
+  const m = {t:20, r:14, b:36, l:44};
+  const iw = W-m.l-m.r, ih = H-m.t-m.b, n = o.labels.length, k = o.series.length;
+  const max = nice(Math.max(...o.series.flatMap(s => s.values)));
+  const gw = iw/n, bw = gw*0.72/k;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||'bars')}">`;
+  for (let i = 0; i <= 4; i++){
+    const y = m.t+ih-ih*i/4;
+    s += `<line x1="${m.l}" y1="${y}" x2="${m.l+iw}" y2="${y}" stroke="${i?C.rule2:C.ink}"/>`
+      +  `<text class="ax" x="${m.l-8}" y="${y+3.5}" text-anchor="end">${o.fmt(max*i/4)}</text>`;
+  }
+  o.series.forEach((ser,j) => ser.values.forEach((v,i) => {
+    const h = ih*v/max, x = m.l+gw*i+gw*0.14+bw*j;
+    s += `<rect x="${x}" y="${m.t+ih-h}" width="${bw}" height="${Math.max(h,1)}" fill="${ser.color}" opacity=".88"/>`;
+  }));
+  const every = W < 520 ? 3 : (W < 760 ? 2 : 1);
+  o.labels.forEach((l,i) => { if (i % every === 0)
+    s += `<text class="ax" x="${m.l+gw*i+gw/2}" y="${m.t+ih+16}" text-anchor="middle">${esc(l)}</text>`; });
+  return s + '</svg>';
+}
+
+/* ---------------- HTML: horizontal bars ---------------- */
+function hBars(rows, o){
+  o = o || {};
+  const max = o.max || Math.max(...rows.map(r => r.value)) * 1.02;
+  return '<div class="bars">' + rows.map((r,i) => `
+    <div class="brow">
+      <div class="blab"><span>${esc(r.label)}</span><span>${o.fmt ? o.fmt(r.value) : r.value}</span></div>
+      <div class="btrack">
+        <div class="bfill" style="width:${(r.value/max*100).toFixed(1)}%;background:${r.color||C.signal};animation-delay:${i*55}ms"></div>
+        ${o.ref ? `<div class="bref" style="left:${(o.ref.value/max*100).toFixed(1)}%"><b>${esc(o.ref.label)}</b></div>` : ''}
+      </div>
+      ${r.note ? `<div class="bnote">${esc(r.note)}</div>` : ''}
+    </div>`).join('') + '</div>';
+}
+
+/* ---------------- HTML: paired comparison bars ---------------- */
+function pairBars(rows, o){
+  const max = Math.max(...rows.flatMap(r => [r.a, r.b])) * 1.02;
+  return '<div class="pair">' + rows.map((r,i) => `
+    <div class="prow"><div class="plab">${esc(r.label)}</div>
+      <div class="pline"><span class="pk">${esc(o.aName)}</span>
+        <span class="pt"><span class="pf" style="width:${(r.a/max*100).toFixed(1)}%;background:${o.aColor};animation-delay:${i*50}ms"></span></span>
+        <span class="pv">${o.fmt(r.a)}</span></div>
+      <div class="pline"><span class="pk">${esc(o.bName)}</span>
+        <span class="pt"><span class="pf" style="width:${(r.b/max*100).toFixed(1)}%;background:${o.bColor};animation-delay:${i*50+70}ms"></span></span>
+        <span class="pv">${o.fmt(r.b)}</span></div>
+      ${r.note ? `<div class="bnote">${esc(r.note)}</div>` : ''}
+    </div>`).join('') + '</div>';
+}
+
+/* ---------------- HTML: funnel with drop-off shading ---------------- */
+function funnelChart(rows, hotStep){
+  return '<div class="fun">' + rows.map((r,i) => {
+    const hot = r.step === hotStep;
+    const prev = i ? rows[i-1].pct_of_signup : 100;
+    return `<div class="fstep${hot ? ' hot' : ''}">
+      <div class="fhead"><span class="fl">${esc(r.label)}</span>
+        <span class="fr">${F.n(r.users)} &nbsp;·&nbsp; ${r.pct_of_signup.toFixed(1)}% of signups &nbsp;·&nbsp; step ${r.step_conv.toFixed(1)}%</span></div>
+      <div class="ftrack">
+        <div class="fdrop" style="left:${r.pct_of_signup.toFixed(1)}%;width:${(prev-r.pct_of_signup).toFixed(1)}%"></div>
+        <div class="ffill" style="width:${r.pct_of_signup.toFixed(1)}%;animation-delay:${i*70}ms"></div>
+      </div>
+      ${i ? `<div class="fdlab">− ${F.n(r.dropped)} users lost here (${r.drop_pct.toFixed(1)}% of the step)</div>` : ''}
+    </div>`;
+  }).join('') + '</div>';
+}
+
+/* ---------------- render registry (re-draws SVG on resize) ---------------- */
+const _svgJobs = [];
+function drawSVG(id, fn){ _svgJobs.push([id, fn]); paintSVG(); }
+function paintSVG(){
+  _svgJobs.forEach(([id, fn]) => { const n = document.getElementById(id); if (n) n.innerHTML = fn(n); });
+}
+let _t; addEventListener('resize', () => { clearTimeout(_t); _t = setTimeout(paintSVG, 140); });
+function put(id, html){ const n = document.getElementById(id); if (n) n.innerHTML = html; }
+</script>
+<script>
+const D = {"total_signups":14200,"funnel":[{"step":"signed_up","label":"Signed up","users":14200,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":12613,"pct_of_signup":88.82,"step_conv":88.82,"dropped":1587,"drop_pct":11.18},{"step":"profile_completed","label":"Business profile completed","users":10518,"pct_of_signup":74.07,"step_conv":83.39,"dropped":2095,"drop_pct":16.61},{"step":"listing_connected","label":"Listing/integration connected","users":5310,"pct_of_signup":37.39,"step_conv":50.48,"dropped":5208,"drop_pct":49.52},{"step":"first_report_published","label":"First report published (Activated)","users":4170,"pct_of_signup":29.37,"step_conv":78.53,"dropped":1140,"drop_pct":21.47},{"step":"converted_to_paid","label":"Converted to paid","users":994,"pct_of_signup":7.0,"step_conv":23.84,"dropped":3176,"drop_pct":76.16},{"step":"retained_day_30","label":"Retained day 30","users":899,"pct_of_signup":6.33,"step_conv":90.44,"dropped":95,"drop_pct":9.56},{"step":"retained_day_90","label":"Retained day 90","users":847,"pct_of_signup":5.96,"step_conv":94.22,"dropped":52,"drop_pct":5.78}],"by_channel":{"Email / Lifecycle":[{"step":"signed_up","label":"Signed up","users":1566,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":1474,"pct_of_signup":94.13,"step_conv":94.13,"dropped":92,"drop_pct":5.87},{"step":"profile_completed","label":"Business profile completed","users":1262,"pct_of_signup":80.59,"step_conv":85.62,"dropped":212,"drop_pct":14.38},{"step":"listing_connected","label":"Listing/integration connected","users":656,"pct_of_signup":41.89,"step_conv":51.98,"dropped":606,"drop_pct":48.02},{"step":"first_report_published","label":"First report published (Activated)","users":542,"pct_of_signup":34.61,"step_conv":82.62,"dropped":114,"drop_pct":17.38},{"step":"converted_to_paid","label":"Converted to paid","users":130,"pct_of_signup":8.3,"step_conv":23.99,"dropped":412,"drop_pct":76.01},{"step":"retained_day_30","label":"Retained day 30","users":116,"pct_of_signup":7.41,"step_conv":89.23,"dropped":14,"drop_pct":10.77},{"step":"retained_day_90","label":"Retained day 90","users":110,"pct_of_signup":7.02,"step_conv":94.83,"dropped":6,"drop_pct":5.17}],"Google Search Ads":[{"step":"signed_up","label":"Signed up","users":3114,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":2765,"pct_of_signup":88.79,"step_conv":88.79,"dropped":349,"drop_pct":11.21},{"step":"profile_completed","label":"Business profile completed","users":2261,"pct_of_signup":72.61,"step_conv":81.77,"dropped":504,"drop_pct":18.23},{"step":"listing_connected","label":"Listing/integration connected","users":1122,"pct_of_signup":36.03,"step_conv":49.62,"dropped":1139,"drop_pct":50.38},{"step":"first_report_published","label":"First report published (Activated)","users":865,"pct_of_signup":27.78,"step_conv":77.09,"dropped":257,"drop_pct":22.91},{"step":"converted_to_paid","label":"Converted to paid","users":224,"pct_of_signup":7.19,"step_conv":25.9,"dropped":641,"drop_pct":74.1},{"step":"retained_day_30","label":"Retained day 30","users":197,"pct_of_signup":6.33,"step_conv":87.95,"dropped":27,"drop_pct":12.05},{"step":"retained_day_90","label":"Retained day 90","users":185,"pct_of_signup":5.94,"step_conv":93.91,"dropped":12,"drop_pct":6.09}],"LinkedIn Ads":[{"step":"signed_up","label":"Signed up","users":1348,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":1227,"pct_of_signup":91.02,"step_conv":91.02,"dropped":121,"drop_pct":8.98},{"step":"profile_completed","label":"Business profile completed","users":1058,"pct_of_signup":78.49,"step_conv":86.23,"dropped":169,"drop_pct":13.77},{"step":"listing_connected","label":"Listing/integration connected","users":541,"pct_of_signup":40.13,"step_conv":51.13,"dropped":517,"drop_pct":48.87},{"step":"first_report_published","label":"First report published (Activated)","users":433,"pct_of_signup":32.12,"step_conv":80.04,"dropped":108,"drop_pct":19.96},{"step":"converted_to_paid","label":"Converted to paid","users":112,"pct_of_signup":8.31,"step_conv":25.87,"dropped":321,"drop_pct":74.13},{"step":"retained_day_30","label":"Retained day 30","users":104,"pct_of_signup":7.72,"step_conv":92.86,"dropped":8,"drop_pct":7.14},{"step":"retained_day_90","label":"Retained day 90","users":96,"pct_of_signup":7.12,"step_conv":92.31,"dropped":8,"drop_pct":7.69}],"Meta Ads":[{"step":"signed_up","label":"Signed up","users":2725,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":2025,"pct_of_signup":74.31,"step_conv":74.31,"dropped":700,"drop_pct":25.69},{"step":"profile_completed","label":"Business profile completed","users":1398,"pct_of_signup":51.3,"step_conv":69.04,"dropped":627,"drop_pct":30.96},{"step":"listing_connected","label":"Listing/integration connected","users":567,"pct_of_signup":20.81,"step_conv":40.56,"dropped":831,"drop_pct":59.44},{"step":"first_report_published","label":"First report published (Activated)","users":350,"pct_of_signup":12.84,"step_conv":61.73,"dropped":217,"drop_pct":38.27},{"step":"converted_to_paid","label":"Converted to paid","users":80,"pct_of_signup":2.94,"step_conv":22.86,"dropped":270,"drop_pct":77.14},{"step":"retained_day_30","label":"Retained day 30","users":59,"pct_of_signup":2.17,"step_conv":73.75,"dropped":21,"drop_pct":26.25},{"step":"retained_day_90","label":"Retained day 90","users":53,"pct_of_signup":1.94,"step_conv":89.83,"dropped":6,"drop_pct":10.17}],"Partner / Agency":[{"step":"signed_up","label":"Signed up","users":2507,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":2468,"pct_of_signup":98.44,"step_conv":98.44,"dropped":39,"drop_pct":1.56},{"step":"profile_completed","label":"Business profile completed","users":2259,"pct_of_signup":90.11,"step_conv":91.53,"dropped":209,"drop_pct":8.47},{"step":"listing_connected","label":"Listing/integration connected","users":1285,"pct_of_signup":51.26,"step_conv":56.88,"dropped":974,"drop_pct":43.12},{"step":"first_report_published","label":"First report published (Activated)","users":1101,"pct_of_signup":43.92,"step_conv":85.68,"dropped":184,"drop_pct":14.32},{"step":"converted_to_paid","label":"Converted to paid","users":239,"pct_of_signup":9.53,"step_conv":21.71,"dropped":862,"drop_pct":78.29},{"step":"retained_day_30","label":"Retained day 30","users":225,"pct_of_signup":8.97,"step_conv":94.14,"dropped":14,"drop_pct":5.86},{"step":"retained_day_90","label":"Retained day 90","users":220,"pct_of_signup":8.78,"step_conv":97.78,"dropped":5,"drop_pct":2.22}],"SEO / Organic":[{"step":"signed_up","label":"Signed up","users":2940,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":2654,"pct_of_signup":90.27,"step_conv":90.27,"dropped":286,"drop_pct":9.73},{"step":"profile_completed","label":"Business profile completed","users":2280,"pct_of_signup":77.55,"step_conv":85.91,"dropped":374,"drop_pct":14.09},{"step":"listing_connected","label":"Listing/integration connected","users":1139,"pct_of_signup":38.74,"step_conv":49.96,"dropped":1141,"drop_pct":50.04},{"step":"first_report_published","label":"First report published (Activated)","users":879,"pct_of_signup":29.9,"step_conv":77.17,"dropped":260,"drop_pct":22.83},{"step":"converted_to_paid","label":"Converted to paid","users":209,"pct_of_signup":7.11,"step_conv":23.78,"dropped":670,"drop_pct":76.22},{"step":"retained_day_30","label":"Retained day 30","users":198,"pct_of_signup":6.73,"step_conv":94.74,"dropped":11,"drop_pct":5.26},{"step":"retained_day_90","label":"Retained day 90","users":183,"pct_of_signup":6.22,"step_conv":92.42,"dropped":15,"drop_pct":7.58}]},"by_onboarding":{"Guided setup":[{"step":"signed_up","label":"Signed up","users":3146,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":3029,"pct_of_signup":96.28,"step_conv":96.28,"dropped":117,"drop_pct":3.72},{"step":"profile_completed","label":"Business profile completed","users":2879,"pct_of_signup":91.51,"step_conv":95.05,"dropped":150,"drop_pct":4.95},{"step":"listing_connected","label":"Listing/integration connected","users":1703,"pct_of_signup":54.13,"step_conv":59.15,"dropped":1176,"drop_pct":40.85},{"step":"first_report_published","label":"First report published (Activated)","users":1504,"pct_of_signup":47.81,"step_conv":88.31,"dropped":199,"drop_pct":11.69},{"step":"converted_to_paid","label":"Converted to paid","users":371,"pct_of_signup":11.79,"step_conv":24.67,"dropped":1133,"drop_pct":75.33},{"step":"retained_day_30","label":"Retained day 30","users":357,"pct_of_signup":11.35,"step_conv":96.23,"dropped":14,"drop_pct":3.77},{"step":"retained_day_90","label":"Retained day 90","users":346,"pct_of_signup":11.0,"step_conv":96.92,"dropped":11,"drop_pct":3.08}],"Self-serve":[{"step":"signed_up","label":"Signed up","users":11054,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":9584,"pct_of_signup":86.7,"step_conv":86.7,"dropped":1470,"drop_pct":13.3},{"step":"profile_completed","label":"Business profile completed","users":7639,"pct_of_signup":69.11,"step_conv":79.71,"dropped":1945,"drop_pct":20.29},{"step":"listing_connected","label":"Listing/integration connected","users":3607,"pct_of_signup":32.63,"step_conv":47.22,"dropped":4032,"drop_pct":52.78},{"step":"first_report_published","label":"First report published (Activated)","users":2666,"pct_of_signup":24.12,"step_conv":73.91,"dropped":941,"drop_pct":26.09},{"step":"converted_to_paid","label":"Converted to paid","users":623,"pct_of_signup":5.64,"step_conv":23.37,"dropped":2043,"drop_pct":76.63},{"step":"retained_day_30","label":"Retained day 30","users":542,"pct_of_signup":4.9,"step_conv":87.0,"dropped":81,"drop_pct":13.0},{"step":"retained_day_90","label":"Retained day 90","users":501,"pct_of_signup":4.53,"step_conv":92.44,"dropped":41,"drop_pct":7.56}]},"by_device":{"Desktop":[{"step":"signed_up","label":"Signed up","users":9147,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":8097,"pct_of_signup":88.52,"step_conv":88.52,"dropped":1050,"drop_pct":11.48},{"step":"profile_completed","label":"Business profile completed","users":6684,"pct_of_signup":73.07,"step_conv":82.55,"dropped":1413,"drop_pct":17.45},{"step":"listing_connected","label":"Listing/integration connected","users":3887,"pct_of_signup":42.49,"step_conv":58.15,"dropped":2797,"drop_pct":41.85},{"step":"first_report_published","label":"First report published (Activated)","users":3045,"pct_of_signup":33.29,"step_conv":78.34,"dropped":842,"drop_pct":21.66},{"step":"converted_to_paid","label":"Converted to paid","users":700,"pct_of_signup":7.65,"step_conv":22.99,"dropped":2345,"drop_pct":77.01},{"step":"retained_day_30","label":"Retained day 30","users":638,"pct_of_signup":6.97,"step_conv":91.14,"dropped":62,"drop_pct":8.86},{"step":"retained_day_90","label":"Retained day 90","users":602,"pct_of_signup":6.58,"step_conv":94.36,"dropped":36,"drop_pct":5.64}],"Mobile":[{"step":"signed_up","label":"Signed up","users":5053,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":4516,"pct_of_signup":89.37,"step_conv":89.37,"dropped":537,"drop_pct":10.63},{"step":"profile_completed","label":"Business profile completed","users":3834,"pct_of_signup":75.88,"step_conv":84.9,"dropped":682,"drop_pct":15.1},{"step":"listing_connected","label":"Listing/integration connected","users":1423,"pct_of_signup":28.16,"step_conv":37.12,"dropped":2411,"drop_pct":62.88},{"step":"first_report_published","label":"First report published (Activated)","users":1125,"pct_of_signup":22.26,"step_conv":79.06,"dropped":298,"drop_pct":20.94},{"step":"converted_to_paid","label":"Converted to paid","users":294,"pct_of_signup":5.82,"step_conv":26.13,"dropped":831,"drop_pct":73.87},{"step":"retained_day_30","label":"Retained day 30","users":261,"pct_of_signup":5.17,"step_conv":88.78,"dropped":33,"drop_pct":11.22},{"step":"retained_day_90","label":"Retained day 90","users":245,"pct_of_signup":4.85,"step_conv":93.87,"dropped":16,"drop_pct":6.13}]},"by_segment":{"Agency":[{"step":"signed_up","label":"Signed up","users":2144,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":1890,"pct_of_signup":88.15,"step_conv":88.15,"dropped":254,"drop_pct":11.85},{"step":"profile_completed","label":"Business profile completed","users":1597,"pct_of_signup":74.49,"step_conv":84.5,"dropped":293,"drop_pct":15.5},{"step":"listing_connected","label":"Listing/integration connected","users":883,"pct_of_signup":41.18,"step_conv":55.29,"dropped":714,"drop_pct":44.71},{"step":"first_report_published","label":"First report published (Activated)","users":693,"pct_of_signup":32.32,"step_conv":78.48,"dropped":190,"drop_pct":21.52},{"step":"converted_to_paid","label":"Converted to paid","users":162,"pct_of_signup":7.56,"step_conv":23.38,"dropped":531,"drop_pct":76.62},{"step":"retained_day_30","label":"Retained day 30","users":141,"pct_of_signup":6.58,"step_conv":87.04,"dropped":21,"drop_pct":12.96},{"step":"retained_day_90","label":"Retained day 90","users":130,"pct_of_signup":6.06,"step_conv":92.2,"dropped":11,"drop_pct":7.8}],"Multi-location":[{"step":"signed_up","label":"Signed up","users":3864,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":3444,"pct_of_signup":89.13,"step_conv":89.13,"dropped":420,"drop_pct":10.87},{"step":"profile_completed","label":"Business profile completed","users":2861,"pct_of_signup":74.04,"step_conv":83.07,"dropped":583,"drop_pct":16.93},{"step":"listing_connected","label":"Listing/integration connected","users":1446,"pct_of_signup":37.42,"step_conv":50.54,"dropped":1415,"drop_pct":49.46},{"step":"first_report_published","label":"First report published (Activated)","users":1139,"pct_of_signup":29.48,"step_conv":78.77,"dropped":307,"drop_pct":21.23},{"step":"converted_to_paid","label":"Converted to paid","users":288,"pct_of_signup":7.45,"step_conv":25.29,"dropped":851,"drop_pct":74.71},{"step":"retained_day_30","label":"Retained day 30","users":272,"pct_of_signup":7.04,"step_conv":94.44,"dropped":16,"drop_pct":5.56},{"step":"retained_day_90","label":"Retained day 90","users":262,"pct_of_signup":6.78,"step_conv":96.32,"dropped":10,"drop_pct":3.68}],"Single location":[{"step":"signed_up","label":"Signed up","users":8192,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":7279,"pct_of_signup":88.85,"step_conv":88.85,"dropped":913,"drop_pct":11.15},{"step":"profile_completed","label":"Business profile completed","users":6060,"pct_of_signup":73.97,"step_conv":83.25,"dropped":1219,"drop_pct":16.75},{"step":"listing_connected","label":"Listing/integration connected","users":2981,"pct_of_signup":36.39,"step_conv":49.19,"dropped":3079,"drop_pct":50.81},{"step":"first_report_published","label":"First report published (Activated)","users":2338,"pct_of_signup":28.54,"step_conv":78.43,"dropped":643,"drop_pct":21.57},{"step":"converted_to_paid","label":"Converted to paid","users":544,"pct_of_signup":6.64,"step_conv":23.27,"dropped":1794,"drop_pct":76.73},{"step":"retained_day_30","label":"Retained day 30","users":486,"pct_of_signup":5.93,"step_conv":89.34,"dropped":58,"drop_pct":10.66},{"step":"retained_day_90","label":"Retained day 90","users":455,"pct_of_signup":5.55,"step_conv":93.62,"dropped":31,"drop_pct":6.38}]},"by_cohort":{"2026-02":[{"step":"signed_up","label":"Signed up","users":1934,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":1712,"pct_of_signup":88.52,"step_conv":88.52,"dropped":222,"drop_pct":11.48},{"step":"profile_completed","label":"Business profile completed","users":1431,"pct_of_signup":73.99,"step_conv":83.59,"dropped":281,"drop_pct":16.41},{"step":"listing_connected","label":"Listing/integration connected","users":718,"pct_of_signup":37.13,"step_conv":50.17,"dropped":713,"drop_pct":49.83},{"step":"first_report_published","label":"First report published (Activated)","users":567,"pct_of_signup":29.32,"step_conv":78.97,"dropped":151,"drop_pct":21.03},{"step":"converted_to_paid","label":"Converted to paid","users":121,"pct_of_signup":6.26,"step_conv":21.34,"dropped":446,"drop_pct":78.66},{"step":"retained_day_30","label":"Retained day 30","users":111,"pct_of_signup":5.74,"step_conv":91.74,"dropped":10,"drop_pct":8.26},{"step":"retained_day_90","label":"Retained day 90","users":103,"pct_of_signup":5.33,"step_conv":92.79,"dropped":8,"drop_pct":7.21}],"2026-03":[{"step":"signed_up","label":"Signed up","users":2123,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":1865,"pct_of_signup":87.85,"step_conv":87.85,"dropped":258,"drop_pct":12.15},{"step":"profile_completed","label":"Business profile completed","users":1567,"pct_of_signup":73.81,"step_conv":84.02,"dropped":298,"drop_pct":15.98},{"step":"listing_connected","label":"Listing/integration connected","users":782,"pct_of_signup":36.83,"step_conv":49.9,"dropped":785,"drop_pct":50.1},{"step":"first_report_published","label":"First report published (Activated)","users":628,"pct_of_signup":29.58,"step_conv":80.31,"dropped":154,"drop_pct":19.69},{"step":"converted_to_paid","label":"Converted to paid","users":155,"pct_of_signup":7.3,"step_conv":24.68,"dropped":473,"drop_pct":75.32},{"step":"retained_day_30","label":"Retained day 30","users":144,"pct_of_signup":6.78,"step_conv":92.9,"dropped":11,"drop_pct":7.1},{"step":"retained_day_90","label":"Retained day 90","users":135,"pct_of_signup":6.36,"step_conv":93.75,"dropped":9,"drop_pct":6.25}],"2026-04":[{"step":"signed_up","label":"Signed up","users":2370,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":2117,"pct_of_signup":89.32,"step_conv":89.32,"dropped":253,"drop_pct":10.68},{"step":"profile_completed","label":"Business profile completed","users":1778,"pct_of_signup":75.02,"step_conv":83.99,"dropped":339,"drop_pct":16.01},{"step":"listing_connected","label":"Listing/integration connected","users":925,"pct_of_signup":39.03,"step_conv":52.02,"dropped":853,"drop_pct":47.98},{"step":"first_report_published","label":"First report published (Activated)","users":716,"pct_of_signup":30.21,"step_conv":77.41,"dropped":209,"drop_pct":22.59},{"step":"converted_to_paid","label":"Converted to paid","users":166,"pct_of_signup":7.0,"step_conv":23.18,"dropped":550,"drop_pct":76.82},{"step":"retained_day_30","label":"Retained day 30","users":145,"pct_of_signup":6.12,"step_conv":87.35,"dropped":21,"drop_pct":12.65},{"step":"retained_day_90","label":"Retained day 90","users":135,"pct_of_signup":5.7,"step_conv":93.1,"dropped":10,"drop_pct":6.9}],"2026-05":[{"step":"signed_up","label":"Signed up","users":2388,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":2137,"pct_of_signup":89.49,"step_conv":89.49,"dropped":251,"drop_pct":10.51},{"step":"profile_completed","label":"Business profile completed","users":1783,"pct_of_signup":74.66,"step_conv":83.43,"dropped":354,"drop_pct":16.57},{"step":"listing_connected","label":"Listing/integration connected","users":878,"pct_of_signup":36.77,"step_conv":49.24,"dropped":905,"drop_pct":50.76},{"step":"first_report_published","label":"First report published (Activated)","users":688,"pct_of_signup":28.81,"step_conv":78.36,"dropped":190,"drop_pct":21.64},{"step":"converted_to_paid","label":"Converted to paid","users":164,"pct_of_signup":6.87,"step_conv":23.84,"dropped":524,"drop_pct":76.16},{"step":"retained_day_30","label":"Retained day 30","users":145,"pct_of_signup":6.07,"step_conv":88.41,"dropped":19,"drop_pct":11.59},{"step":"retained_day_90","label":"Retained day 90","users":136,"pct_of_signup":5.7,"step_conv":93.79,"dropped":9,"drop_pct":6.21}],"2026-06":[{"step":"signed_up","label":"Signed up","users":2480,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":2203,"pct_of_signup":88.83,"step_conv":88.83,"dropped":277,"drop_pct":11.17},{"step":"profile_completed","label":"Business profile completed","users":1816,"pct_of_signup":73.23,"step_conv":82.43,"dropped":387,"drop_pct":17.57},{"step":"listing_connected","label":"Listing/integration connected","users":925,"pct_of_signup":37.3,"step_conv":50.94,"dropped":891,"drop_pct":49.06},{"step":"first_report_published","label":"First report published (Activated)","users":713,"pct_of_signup":28.75,"step_conv":77.08,"dropped":212,"drop_pct":22.92},{"step":"converted_to_paid","label":"Converted to paid","users":188,"pct_of_signup":7.58,"step_conv":26.37,"dropped":525,"drop_pct":73.63},{"step":"retained_day_30","label":"Retained day 30","users":166,"pct_of_signup":6.69,"step_conv":88.3,"dropped":22,"drop_pct":11.7},{"step":"retained_day_90","label":"Retained day 90","users":157,"pct_of_signup":6.33,"step_conv":94.58,"dropped":9,"drop_pct":5.42}],"2026-07":[{"step":"signed_up","label":"Signed up","users":2905,"pct_of_signup":100.0,"step_conv":100.0,"dropped":0,"drop_pct":0.0},{"step":"email_verified","label":"Email verified","users":2579,"pct_of_signup":88.78,"step_conv":88.78,"dropped":326,"drop_pct":11.22},{"step":"profile_completed","label":"Business profile completed","users":2143,"pct_of_signup":73.77,"step_conv":83.09,"dropped":436,"drop_pct":16.91},{"step":"listing_connected","label":"Listing/integration connected","users":1082,"pct_of_signup":37.25,"step_conv":50.49,"dropped":1061,"drop_pct":49.51},{"step":"first_report_published","label":"First report published (Activated)","users":858,"pct_of_signup":29.54,"step_conv":79.3,"dropped":224,"drop_pct":20.7},{"step":"converted_to_paid","label":"Converted to paid","users":200,"pct_of_signup":6.88,"step_conv":23.31,"dropped":658,"drop_pct":76.69},{"step":"retained_day_30","label":"Retained day 30","users":188,"pct_of_signup":6.47,"step_conv":94.0,"dropped":12,"drop_pct":6.0},{"step":"retained_day_90","label":"Retained day 90","users":181,"pct_of_signup":6.23,"step_conv":96.28,"dropped":7,"drop_pct":3.72}]},"median_days_to_activation":5.7,"median_days_guided":4.5,"median_days_selfserve":6.2,"paid_mrr":148075.84,"conv_if_activated":20.29,"conv_if_not_activated":1.48,"paid_accounts":994,"d90_if_teammate":91.68,"teammate_invite_rate":26.86,"d90_if_no_teammate":76.26,"leak":{"step":"Listing/integration connected","dropped":5208,"drop_pct":49.52,"entered":10518,"extra_paid_per_10pp":168,"extra_mrr_per_10pp":24968.32,"extra_arr_per_10pp":299619.85,"months":6},"leak_step":"listing_connected"};
+const at = (f, s) => f.find(r => r.step === s);
+const HOT = D.leak_step;
+
+put('c-funnel', funnelChart(D.funnel, HOT));
+
+put('c-steps', hBars(D.funnel.slice(1).map(r => ({label:r.label, value:r.step_conv,
+    color:r.step === HOT ? C.leak : (r.step_conv < 60 ? C.amber : C.ink),
+    note:`${F.n(r.dropped)} lost · ${F.n(r.users)} continue`})),
+  {fmt:F.pct, max:100, ref:{value:60, label:'60% design threshold'}}));
+
+put('c-device', pairBars(Object.keys(D.by_device).map(d => ({label:d,
+    a:at(D.by_device[d], HOT).step_conv, b:at(D.by_device[d], 'converted_to_paid').pct_of_signup,
+    note:`${F.n(D.by_device[d][0].users)} signups`})),
+  {aName:'Step conv', bName:'Signup→paid', aColor:C.leak, bColor:C.signal, fmt:F.pct}));
+
+put('c-onboard', pairBars(Object.keys(D.by_onboarding).map(o => ({label:o,
+    a:at(D.by_onboarding[o], 'first_report_published').pct_of_signup,
+    b:at(D.by_onboarding[o], 'converted_to_paid').pct_of_signup,
+    note:`${F.n(D.by_onboarding[o][0].users)} signups`})),
+  {aName:'Activated', bName:'Paid', aColor:C.gain, bColor:C.signal, fmt:F.pct}));
+
+put('c-tta', hBars([
+  {label:'Guided setup', value:D.median_days_guided, color:C.gain, note:'median days to first report'},
+  {label:'All accounts', value:D.median_days_to_activation, color:C.ink2, note:'median days to first report'},
+  {label:'Self-serve', value:D.median_days_selfserve, color:C.amber, note:'median days to first report'}
+], {fmt:v => v.toFixed(1) + ' days'}));
+
+const chanRows = Object.keys(D.by_channel).map(c => ({label:c,
+  a:at(D.by_channel[c], 'first_report_published').pct_of_signup,
+  b:at(D.by_channel[c], 'converted_to_paid').pct_of_signup,
+  note:`${F.n(D.by_channel[c][0].users)} signups`})).sort((x,y) => y.b - x.b);
+put('c-chan', pairBars(chanRows, {aName:'Activated', bName:'Paid', aColor:C.ink2, bColor:C.signal, fmt:F.pct}));
+
+const heat = (v, lo, hi) => {
+  const t = Math.max(0, Math.min(1, (v-lo)/(hi-lo)));
+  return `background:rgba(29,63,209,${(0.06+t*0.30).toFixed(3)})`;
+};
+document.querySelector('#t-cohort tbody').innerHTML = Object.keys(D.by_cohort).sort().map(c => {
+  const f = D.by_cohort[c], g = s => at(f, s);
+  const mo = c.split('-'), lab = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo[1]-1] + ' ' + mo[0];
+  return `<tr><td>${lab}</td><td>${F.n(f[0].users)}</td>
+    <td><b style="${heat(g('email_verified').pct_of_signup,80,92)}">${F.pct(g('email_verified').pct_of_signup)}</b></td>
+    <td><b style="${heat(g(HOT).pct_of_signup,34,41)}">${F.pct(g(HOT).pct_of_signup)}</b></td>
+    <td><b style="${heat(g('first_report_published').pct_of_signup,27,32)}">${F.pct(g('first_report_published').pct_of_signup)}</b></td>
+    <td><b style="${heat(g('converted_to_paid').pct_of_signup,6,8)}">${F.pct2(g('converted_to_paid').pct_of_signup)}</b></td>
+    <td><b style="${heat(g('retained_day_90').pct_of_signup,5,7)}">${F.pct2(g('retained_day_90').pct_of_signup)}</b></td></tr>`;
+}).join('');
+</script>
+</body>
+</html>

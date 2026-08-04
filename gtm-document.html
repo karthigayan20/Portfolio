@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Go-to-Market Strategy: Reputation AI — RP Karthigayan</title>
+<meta name="description" content="Go-to-market strategy document for an AI reputation module: positioning, ICP, competitive set, pricing, messaging, launch plan and risks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>:root{
+  --ink:#14202B; --ink2:#485A67; --ink3:#7C8B94;
+  --paper:#ECEDE8; --card:#FBFBFA; --rule:#C7CCC5; --rule2:#DEE1DB;
+  --signal:#1D3FD1; --leak:#C4462B; --gain:#157F6B; --amber:#B8830F;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --disp:"Bricolage Grotesque","Archivo",Helvetica,sans-serif;
+  --body:"Public Sans","Helvetica Neue",Arial,sans-serif;
+  --pad:clamp(18px,4vw,64px);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--body); font-size:16px; line-height:1.6;
+  font-variant-numeric:tabular-nums;
+  background-image:linear-gradient(var(--rule2) 1px,transparent 1px),linear-gradient(90deg,var(--rule2) 1px,transparent 1px);
+  background-size:64px 64px; background-position:-1px -1px;
+}
+.shell{max-width:1180px;margin:0 auto;padding:0 var(--pad)}
+a{color:inherit}
+h1,h2,h3,h4{font-family:var(--disp);font-weight:800;letter-spacing:-.03em;line-height:.98;margin:0}
+h1{font-size:clamp(38px,7.4vw,88px)}
+h2{font-size:clamp(26px,3.6vw,44px)}
+h3{font-size:clamp(18px,2vw,24px);letter-spacing:-.02em}
+p{margin:0 0 14px}
+/* ---------- utility type ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3)}
+.mono{font-family:var(--mono)}
+.lede{font-size:clamp(16px,1.55vw,19px);color:var(--ink2);max-width:62ch}
+.small{font-size:13px;color:var(--ink2)}
+.tiny{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink3)}
+/* ---------- top bar ---------- */
+.bar{position:sticky;top:0;z-index:40;background:rgba(236,237,232,.92);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.bar-in{max-width:1180px;margin:0 auto;padding:11px var(--pad);
+  display:flex;align-items:center;justify-content:space-between;gap:16px}
+.bar-name{font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:-.01em}
+.bar-nav{display:flex;gap:20px;font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+.bar-nav a{text-decoration:none;color:var(--ink2);padding-bottom:2px;border-bottom:1px solid transparent}
+.bar-nav a:hover{color:var(--ink);border-bottom-color:var(--signal)}
+@media(max-width:720px){.bar-nav{display:none}}
+/* ---------- calibration rule (structural signature) ---------- */
+.calib{height:26px;border-top:1px solid var(--ink);position:relative;margin:0}
+.calib::before{content:"";position:absolute;inset:0 0 auto 0;height:9px;
+  background-image:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 24px)}
+.calib::after{content:"";position:absolute;inset:0 0 auto 0;height:16px;
+  background-image:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 120px)}
+/* ---------- sections ---------- */
+.sec{padding:clamp(46px,6vw,86px) 0 0}
+.sec-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:26px}
+.sec-head .eyebrow{padding-top:6px}
+/* ---------- cards ---------- */
+.card{background:var(--card);border:1px solid var(--rule);padding:clamp(18px,2.4vw,28px)}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr}}
+/* ---------- readouts ---------- */
+.readout{background:var(--card);border:1px solid var(--rule);padding:14px 16px 12px;position:relative}
+.readout .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink3);display:block;margin-bottom:8px}
+.readout .v{font-family:var(--disp);font-weight:800;font-size:clamp(24px,2.9vw,34px);
+  letter-spacing:-.035em;line-height:1;display:block}
+.readout .n{font-family:var(--mono);font-size:11px;color:var(--ink2);margin-top:7px;display:block}
+.readout::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--signal)}
+.readout.leak::after{background:var(--leak)}
+.readout.gain::after{background:var(--gain)}
+.readout.amber::after{background:var(--amber)}
+.d-up{color:var(--gain)} .d-dn{color:var(--leak)}
+/* ---------- chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  border:1px solid var(--rule);padding:4px 8px;color:var(--ink2);background:transparent}
+.chip.on{border-color:var(--ink);color:var(--ink)}
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;border:1px solid var(--rule);background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px}
+thead th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  text-align:right;color:var(--ink3);padding:11px 12px;border-bottom:1px solid var(--ink);white-space:nowrap}
+thead th:first-child{text-align:left}
+tbody td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--rule2);
+  font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+tbody td:first-child{text-align:left;font-family:var(--body);font-size:13.5px;font-weight:500}
+tbody tr:hover{background:#F2F3EE}
+tbody tr.hl{background:#FBF2EF}
+tbody tr.hl td:first-child{box-shadow:inset 3px 0 0 var(--leak)}
+.pill{font-family:var(--mono);font-size:10.5px;padding:2px 7px;border:1px solid currentColor}
+.pill.ok{color:var(--gain)} .pill.miss{color:var(--leak)} .pill.watch{color:var(--amber)}
+/* ---------- charts ---------- */
+.chart{background:var(--card);border:1px solid var(--rule);padding:18px 18px 12px}
+.chart h3{font-size:16px;letter-spacing:-.01em}
+.chart .sub{font-size:12.5px;color:var(--ink2);margin:6px 0 14px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.legend i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+text{font-family:var(--mono);fill:var(--ink2)}
+.ax{font-size:10px;letter-spacing:.04em}
+.vlab{font-size:10.5px;fill:var(--ink);font-weight:500}
+/* ---------- notes / insight blocks ---------- */
+.note{border-left:2px solid var(--signal);padding:2px 0 2px 16px;margin:16px 0}
+.note.leak{border-color:var(--leak)}
+.ins{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--rule2)}
+.ins:last-child{border-bottom:0}
+.ins-n{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--signal);
+  padding-top:4px;min-width:34px}
+.ins-b h4{font-family:var(--disp);font-size:17px;margin-bottom:5px}
+.ins-b p{margin:0;font-size:14.5px;color:var(--ink2)}
+.ins-b b{color:var(--ink);font-family:var(--mono);font-size:13.5px;font-weight:600}
+/* ---------- brief block ---------- */
+.brief{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;
+  border:1px solid var(--rule);background:var(--card)}
+.brief>div{padding:16px 18px;border-right:1px solid var(--rule2)}
+.brief>div:last-child{border-right:0}
+.brief dt{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:7px}
+.brief dd{margin:0;font-size:13.5px;color:var(--ink)}
+@media(max-width:860px){.brief{grid-template-columns:repeat(2,1fr)}
+  .brief>div{border-bottom:1px solid var(--rule2)}}
+@media(max-width:520px){.brief{grid-template-columns:1fr}}
+/* ---------- footer ---------- */
+footer{margin-top:clamp(56px,7vw,96px);border-top:1px solid var(--ink);
+  padding:34px 0 46px;background:transparent}
+/* ---------- links ---------- */
+.link{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;
+  text-decoration:none;border-bottom:1px solid var(--signal);padding-bottom:2px;color:var(--ink)}
+.link:hover{background:#E3E6F7}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--card);
+  background:var(--ink);padding:11px 16px;border:1px solid var(--ink)}
+.btn:hover{background:var(--signal);border-color:var(--signal)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--card)}
+:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
+.sim{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--amber);border:1px solid var(--amber);padding:3px 8px;display:inline-block}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ── project flow nav ───────────────────────────────────────────── */
+.flow{border-top:1px solid var(--ink);border-bottom:1px solid var(--rule);
+  margin:clamp(24px,3.4vw,38px) 0 0;padding:14px 0;display:flex;gap:16px;align-items:flex-start}
+.flow-l{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink3);flex:0 0 auto;padding-top:5px}
+.flow ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 8px}
+.flow li{margin:0}
+.flow a{display:inline-flex;align-items:baseline;gap:6px;text-decoration:none;
+  border:1px solid var(--rule2);background:var(--card);padding:5px 9px;
+  font-size:12.5px;color:var(--ink2);transition:border-color .15s,color .15s,background .15s}
+.flow a i{font-family:var(--mono);font-style:normal;font-size:9.5px;color:var(--ink3);letter-spacing:.06em}
+.flow a:hover{border-color:var(--signal);color:var(--signal);background:#fff}
+.flow a:hover i{color:var(--signal)}
+@media(max-width:700px){.flow{flex-direction:column;gap:9px}.flow-l{padding-top:0}}
+
+/* ── materials & assets tiles ───────────────────────────────────── */
+.assets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule)}
+.asset{display:grid;grid-template-columns:52px 1fr;gap:14px;background:var(--card);
+  padding:17px 18px;text-decoration:none;position:relative;transition:background .15s}
+.asset:hover{background:#fff}
+.asset .ax{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--paper);background:var(--ink);height:26px;
+  display:flex;align-items:center;justify-content:center;border-radius:1px}
+.asset.sql .ax{background:var(--signal)}
+.asset.xlsx .ax{background:var(--gain)}
+.asset.csv .ax{background:var(--ink2)}
+.asset.doc .ax{background:var(--amber)}
+.asset.page .ax{background:var(--leak)}
+.asset b{display:block;font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--ink);
+  letter-spacing:-.01em;word-break:break-all;margin-bottom:6px}
+.asset i{display:block;font-style:normal;font-size:13px;line-height:1.5;color:var(--ink2)}
+.asset .aa{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);margin-top:9px}
+.asset:hover .aa{color:var(--signal)}
+.asset:hover b{color:var(--signal)}
+@media(max-width:760px){.assets{grid-template-columns:1fr}}
+
+/* ── prev / next project ────────────────────────────────────────── */
+.pnav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--rule);
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--rule);margin-top:clamp(34px,5vw,60px)}
+.pnav a{background:var(--card);padding:22px 22px 24px;text-decoration:none;transition:background .15s}
+.pnav a:hover{background:#fff}
+.pnav a.nx{text-align:right}
+.pnav .d{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink3);display:block;margin-bottom:9px}
+.pnav .t{font-family:var(--disp);font-weight:600;font-size:clamp(17px,2.1vw,22px);letter-spacing:-.02em;
+  color:var(--ink);display:block;line-height:1.22}
+.pnav a:hover .t{color:var(--signal)}
+.pnav a:hover .d{color:var(--signal)}
+@media(max-width:620px){.pnav{grid-template-columns:1fr}.pnav a.nx{text-align:left}}
+
+/* ── primary button additions ───────────────────────────────────── */
+.btn .ar{font-family:var(--mono);font-size:12px;line-height:1}
+.btn.lg{font-size:12.5px;padding:12px 19px;letter-spacing:.05em}
+
+/* ── rendered document page ─────────────────────────────────────── */
+.doc{max-width:74ch;padding-top:clamp(26px,4vw,46px)}
+.doc h1{font-size:clamp(30px,4.6vw,52px);margin-bottom:20px}
+.doc h2{font-family:var(--disp);font-weight:700;font-size:clamp(21px,2.7vw,29px);letter-spacing:-.025em;
+  margin:44px 0 14px;padding-top:16px;border-top:1px solid var(--rule)}
+.doc h3{font-family:var(--disp);font-weight:600;font-size:clamp(16px,1.9vw,19px);margin:28px 0 10px}
+.doc h4{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink3);margin:22px 0 8px}
+.doc p{font-size:15px;line-height:1.66;color:var(--ink2);margin-bottom:14px}
+.doc li{font-size:14.5px;line-height:1.62;color:var(--ink2);margin-bottom:7px}
+.doc ul,.doc ol{padding-left:20px;margin-bottom:16px}
+.doc strong{color:var(--ink);font-weight:600}
+.doc code{font-family:var(--mono);font-size:12.5px;background:var(--rule2);padding:1px 5px}
+.doc table{width:100%;border-collapse:collapse;margin:18px 0;font-size:13px}
+.doc th{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  text-align:left;color:var(--ink3);border-bottom:1px solid var(--ink);padding:9px 10px 8px}
+.doc td{border-bottom:1px solid var(--rule2);padding:9px 10px;color:var(--ink2);vertical-align:top}
+.doc td:not(:first-child){font-family:var(--mono);font-size:12.5px}
+.doc blockquote{border-left:2px solid var(--signal);margin:18px 0;padding:2px 0 2px 16px}
+.doc blockquote p{margin-bottom:0;color:var(--ink)}
+.doc hr{border:0;border-top:1px solid var(--rule);margin:34px 0}
+
+/* ---------- HTML bar charts: readable labels at every width ---------- */
+.bars{display:flex;flex-direction:column;gap:13px;margin-top:4px}
+.brow{display:grid;grid-template-columns:1fr;gap:5px}
+.blab{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.blab span:first-child{font-size:13.5px;font-weight:500}
+.blab span:last-child{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+.btrack{position:relative;height:14px;background:#E9EBE5;border:1px solid var(--rule2)}
+.bfill{position:absolute;left:0;top:0;bottom:0;background:var(--signal);
+  transform-origin:left center;animation:grow .7s cubic-bezier(.2,.8,.25,1) both}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.bnote{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.bref{position:absolute;top:-4px;bottom:-4px;width:1px;background:var(--ink);z-index:2}
+.bref b{position:absolute;left:4px;top:-15px;font-family:var(--mono);font-size:9.5px;
+  font-weight:500;letter-spacing:.06em;color:var(--ink);white-space:nowrap;text-transform:uppercase}
+/* funnel */
+.fun{display:flex;flex-direction:column;gap:0;margin-top:6px}
+.fstep{padding:11px 0 12px;border-bottom:1px solid var(--rule2)}
+.fstep:last-child{border-bottom:0}
+.fhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.fhead .fl{font-size:14px;font-weight:500}
+.fhead .fr{font-family:var(--mono);font-size:12px;color:var(--ink2)}
+.ftrack{position:relative;height:20px;background:#E9EBE5;border:1px solid var(--rule2)}
+.ffill{position:absolute;left:0;top:0;bottom:0;background:var(--ink);
+  animation:grow .8s cubic-bezier(.2,.8,.25,1) both;transform-origin:left}
+.fstep.hot .ffill{background:var(--leak)}
+.fdrop{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,#DCDFD8 0 4px,#E9EBE5 4px 8px)}
+.fdlab{font-family:var(--mono);font-size:11px;margin-top:6px;color:var(--ink3)}
+.fstep.hot .fdlab{color:var(--leak)}
+/* paired bars */
+.pair{display:flex;flex-direction:column;gap:14px;margin-top:4px}
+.prow .plab{font-size:13.5px;font-weight:500;margin-bottom:5px}
+.pline{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.pline .pt{position:relative;flex:1;height:11px;background:#E9EBE5;border:1px solid var(--rule2)}
+.pline .pf{position:absolute;inset:0 auto 0 0;animation:grow .7s cubic-bezier(.2,.8,.25,1) both;transform-origin:left}
+.pline .pv{font-family:var(--mono);font-size:11.5px;min-width:52px;text-align:right}
+.pline .pk{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink3);min-width:74px}
+/* heat cells */
+.heat td b{display:block;padding:3px 6px;font-weight:500}
+
+.crumb{display:flex;gap:10px;align-items:center;margin-bottom:18px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.crumb a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--rule)}
+.crumb a:hover{color:var(--signal);border-color:var(--signal)}
+.doc h1{margin-bottom:14px}
+</style>
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <span class="bar-name">RP Karthigayan</span>
+  <nav class="bar-nav"><a href="index.html">← Portfolio</a>
+    <a href="project-1-gtm-launch.html">P1 case study</a>
+    <a href="project-2-marketing-analytics.html">P2 Analytics</a>
+    <a href="project-3-funnel-analysis.html">P3 Funnel</a></nav>
+</div></header>
+
+<main class="shell">
+  <div class="doc">
+    <p class="crumb"><a href="index.html">Portfolio</a> <span>/</span>
+      <a href="project-1-gtm-launch.html">P1 · GTM &amp; launch</a> <span>/</span>
+      <span>Strategy document</span></p>
+    <p class="sim" style="margin-bottom:24px">Simulated product and scenario · real method</p>
+<h1>Go-to-Market Strategy: Reputation AI</h1>
+<p><strong>Product:</strong> LumaLocal Reputation AI — an AI review-response module inside a local marketing platform
+<strong>Channel:</strong> Partner-led (agency resellers) with direct self-serve secondary
+<strong>Market:</strong> United States SMB local services
+<strong>Author:</strong> RP Karthigayan · karthickoffical2009@gmail.com
+<strong>Document status:</strong> Launch package, retrospectively annotated with 90-day results</p>
+<blockquote>
+<p><strong>Data disclosure.</strong> LumaLocal is a fictional product and the launch results in Section 9 come from
+a simulated dataset (<code>launch_scorecard_90day.csv</code>), built so this work can be published openly.
+The framework, sequencing and measurement design are what I would use on a real launch.</p>
+</blockquote>
+<hr />
+<h2>1. Executive summary</h2>
+<p>LumaLocal sells local marketing software to US small businesses. Most revenue arrives through agency
+partners who resell the platform under their own brand. A new AI module — Reputation AI, which drafts
+replies to customer reviews and reports sentiment by location — was built without a plan for how
+partners would sell it. Previous module launches attached to fewer than 20% of active accounts.</p>
+<p><strong>The strategic bet:</strong> in a partner-led channel, attach rate is won or lost on partner economics and
+enablement, not on product messaging to end customers. So the plan put a 51% partner margin and a
+default-on trial ahead of everything else.</p>
+<p><strong>Targets set before launch (90 days):</strong> 55% attach rate on active accounts, 275 partner reps
+enabled, 900 demos booked, 185 closed-won accounts, $9,500 module MRR added.</p>
+<p><strong>What happened:</strong> attach rate reached <strong>61.7%</strong> and <strong>284</strong> reps were enabled — both ahead of plan.
+But demos came in at <strong>770</strong> against 900, and closed-won at <strong>169</strong> against 185, so module MRR landed
+at <strong>$8,562</strong> — about 10% short. The constraint was demand generation, not the product story. Details
+and the retrospective are in Sections 9 and 10.</p>
+<hr />
+<h2>2. The market and the problem</h2>
+<p><strong>Who has the problem.</strong> US local service businesses — dental practices, home services, restaurants,
+auto repair, salons — where a public review rating is a direct input to revenue.</p>
+<p><strong>The problem in their words:</strong> <em>"Reviews are the thing clients ask us about, and the thing we're
+worst at."</em></p>
+<p>Three things make review response fail in practice:</p>
+<ol>
+<li><strong>It is unscheduled work.</strong> Reviews arrive at random. Anything unscheduled loses to anything on a
+   calendar.</li>
+<li><strong>Each reply starts from scratch.</strong> Writing a considered response to an unhappy customer is
+   genuinely hard, so it gets postponed and then abandoned.</li>
+<li><strong>Nobody owns the outcome.</strong> Agencies bill for SEO, ads and content. Review response is usually
+   absorbed as unbilled goodwill, so it is nobody's priority.</li>
+</ol>
+<p><strong>Why now.</strong> Response time and reply coverage are increasingly visible signals, and AI has made a
+good first draft cheap. The wedge is not "AI writes replies" — it is that a draft removes the blank
+page, which is the actual reason replies do not happen.</p>
+<p><strong>What we are really competing with:</strong> doing nothing. That framing changed the messaging. See
+Section 5.</p>
+<hr />
+<h2>3. Ideal customer profile</h2>
+<p>Segments are deliberately <strong>ranked</strong>, because ranking decides where enablement budget goes.</p>
+<h3>Priority 1 — The agency partner (the channel)</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Profile</td>
+<td>5–50 SMB clients, 2–10 staff, retainers of $500–$2,500/month</td>
+</tr>
+<tr>
+<td>Buyer</td>
+<td>Agency owner or account lead</td>
+</tr>
+<tr>
+<td>Pain</td>
+<td>Review management is manual, inconsistent and mostly unbilled</td>
+</tr>
+<tr>
+<td>Buying trigger</td>
+<td>A client asks why their rating dropped</td>
+</tr>
+<tr>
+<td>What wins</td>
+<td>A billable line item they can white-label and defend in a monthly report</td>
+</tr>
+<tr>
+<td>What loses</td>
+<td>Anything that reads as "another tool to learn" or cuts their margin</td>
+</tr>
+</tbody>
+</table>
+<p>One partner carries dozens of accounts, so a single enablement conversation compounds. This is why
+Priority 1 receives roughly 70% of launch effort.</p>
+<h3>Priority 2 — Multi-location operator (expansion)</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Profile</td>
+<td>3–20 locations: dental groups, home services, restaurant groups</td>
+</tr>
+<tr>
+<td>Buyer</td>
+<td>Marketing manager or operations director</td>
+</tr>
+<tr>
+<td>Pain</td>
+<td>No consistent voice across locations, no comparable view of sentiment</td>
+</tr>
+<tr>
+<td>Buying trigger</td>
+<td>One location dragging the brand average down</td>
+</tr>
+<tr>
+<td>What wins</td>
+<td>Location-level comparison plus an approval step before anything posts</td>
+</tr>
+<tr>
+<td>What loses</td>
+<td>No approval workflow — brand risk kills the deal instantly</td>
+</tr>
+</tbody>
+</table>
+<p>Highest revenue per account because pricing is per location.</p>
+<h3>Priority 3 — Single-location owner (volume)</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Profile</td>
+<td>Owner-operator, no marketing staff, self-serve signup</td>
+</tr>
+<tr>
+<td>Buyer</td>
+<td>The owner</td>
+</tr>
+<tr>
+<td>Pain</td>
+<td>Does not know what to write, so leaves reviews unanswered</td>
+</tr>
+<tr>
+<td>Buying trigger</td>
+<td>A bad review they cannot answer</td>
+</tr>
+<tr>
+<td>What wins</td>
+<td>A draft already waiting in the inbox</td>
+</tr>
+<tr>
+<td>What loses</td>
+<td>Price. This segment is the most sensitive and got the least attention — a known gap</td>
+</tr>
+</tbody>
+</table>
+<h3>Explicitly out of scope</h3>
+<p>Enterprise multi-brand (needs SSO, procurement and a security review), non-US markets (review
+platform coverage and language quality untested), and businesses without public review profiles.</p>
+<hr />
+<h2>4. Positioning</h2>
+<p><strong>Positioning statement</strong></p>
+<blockquote>
+<p>For <strong>US local businesses and the agencies that manage them</strong>, who lose customers to reviews that
+sit unanswered for days, <strong>Reputation AI</strong> is a review-response layer inside the marketing platform
+they already log into. It drafts on-brand replies in minutes and reports sentiment by location.
+Unlike standalone reputation tools, <strong>it needs no new login, no new contract, and it bills through
+the partner.</strong></p>
+</blockquote>
+<p><strong>Category.</strong> We do not compete in "AI writing". We compete for the reputation-management line item
+an agency already sells, or the hour an owner already spends. Naming the category this way is what
+makes the pricing defensible — it is measured against existing spend, not against a free chatbot.</p>
+<p><strong>Primary value:</strong> response time and consistency — the two things manual replying always fails at.</p>
+<p><strong>Proof we lead with:</strong> median response time and reply coverage per location, shown inside the
+partner's own monthly client report. The report is the sales asset, not the product tour.</p>
+<p><strong>Three things we deliberately do not claim:</strong> that AI replies are indistinguishable from human ones,
+that it improves star ratings directly (we can only evidence response time and coverage), or that it
+replaces a community manager.</p>
+<hr />
+<h2>5. Competitive set</h2>
+<p>Competitors are described as <strong>archetypes</strong> rather than named vendors: it keeps the framework
+portable and avoids making claims about a specific company's product that I cannot verify.</p>
+<table>
+<thead>
+<tr>
+<th>Alternative</th>
+<th>Strength</th>
+<th>Weakness</th>
+<th>Our counter</th>
+<th>Threat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Standalone reputation suite</strong></td>
+<td>Deep feature set, wide integrations, strong brand</td>
+<td>Another login, another invoice, poor economics for agencies reselling at margin</td>
+<td>Already inside the platform partners use; no new procurement</td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>All-in-one agency platform</strong></td>
+<td>Owns the partner relationship, bundles everything</td>
+<td>Reputation is a checkbox; reply quality is generic</td>
+<td>Compete on reply quality and per-location reporting, not breadth</td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>General AI writing tool</strong></td>
+<td>Cheap, flexible, already on the owner's phone</td>
+<td>No review data, no posting, no audit trail, no reporting</td>
+<td>Connected to the review source and to the client report</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Status quo — reply by hand</strong></td>
+<td>Free, familiar, no approval needed</td>
+<td>Slow, inconsistent, quietly abandoned when the team gets busy</td>
+<td>Lead with time-to-reply and coverage, not with "AI"</td>
+<td><strong>Highest</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>The most important line in this table is the last one.</strong> Most deals are lost to inertia, not to a
+competitor. That is why the discovery question is <em>"how fast do your reviews get answered today?"</em> —
+it makes the status quo visible and quantified before price is discussed.</p>
+<hr />
+<h2>6. Pricing and packaging</h2>
+<table>
+<thead>
+<tr>
+<th>Lever</th>
+<th>Decision</th>
+<th>Reasoning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Retail price</td>
+<td><strong>$39 per location / month</strong></td>
+<td>Anchors below a standalone tool while clearing the margin requirement</td>
+</tr>
+<tr>
+<td>Partner wholesale</td>
+<td><strong>$19 per location / month</strong></td>
+<td>51% partner margin — the level at which partners actively sell rather than absorb</td>
+</tr>
+<tr>
+<td>Unit</td>
+<td><strong>Per location</strong></td>
+<td>Lets multi-location accounts expand without a renegotiation</td>
+</tr>
+<tr>
+<td>Trial</td>
+<td><strong>30 days, auto-enabled, opt-out</strong></td>
+<td>Removes the partner's decision to introduce it</td>
+</tr>
+<tr>
+<td>Target ARPA uplift</td>
+<td><strong>$50</strong> on a $149 average account</td>
+<td>Roughly a 34% ARPA increase where it attaches</td>
+</tr>
+<tr>
+<td>Bundling</td>
+<td>Not bundled into base</td>
+<td>Bundling would have hidden the revenue and removed the partner's margin</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The decision that mattered most</strong> was auto-enabling the trial. Attach rate in a partner-led channel
+is throttled by partner attention, not customer demand. Making the module present by default moved
+the partner's job from "introduce a new product" to "keep something the client is already using" —
+and that is the single biggest reason attach rate beat target.</p>
+<p><strong>Objection handling</strong></p>
+<table>
+<thead>
+<tr>
+<th>Objection</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"AI replies will sound robotic."</td>
+<td>Approval workflow is on by default. Every reply is a draft until a human posts it.</td>
+</tr>
+<tr>
+<td>"My clients won't pay more."</td>
+<td>Sell against staff time, then show the per-location coverage report at the next client review.</td>
+</tr>
+<tr>
+<td>"We already reply to reviews."</td>
+<td>Median response time is the wedge. Nearly every account replies to <em>some</em> reviews; almost none reply to all of them.</td>
+</tr>
+<tr>
+<td>"What if it replies to something sensitive?"</td>
+<td>Configurable hold rules: 1–2 star reviews and flagged keywords always route to a human.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>7. Message map</h2>
+<p>One row per audience. No shared "value props" slide — a message that works for an agency owner and a
+single-location owner simultaneously is a message that persuades neither.</p>
+<table>
+<thead>
+<tr>
+<th>Audience</th>
+<th>Their words for the problem</th>
+<th>Message</th>
+<th>Proof point</th>
+<th>Primary CTA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Agency partner</strong></td>
+<td>"Reviews are what clients ask about and what we do worst."</td>
+<td>Turn review management into a billable, reportable service you don't have to staff.</td>
+<td>51% margin, white-labelled client report</td>
+<td>Enable on 3 clients</td>
+</tr>
+<tr>
+<td><strong>Multi-location operator</strong></td>
+<td>"One location is dragging our rating down and I find out late."</td>
+<td>See sentiment by location, reply in one voice, approve before anything posts.</td>
+<td>Per-location coverage and response-time view</td>
+<td>Book a walkthrough</td>
+</tr>
+<tr>
+<td><strong>Single-location owner</strong></td>
+<td>"I don't know what to write, so I leave it."</td>
+<td>A reply is already drafted and waiting. Read it, change it, post it.</td>
+<td>Median reply time under a day</td>
+<td>Turn on the free trial</td>
+</tr>
+<tr>
+<td><strong>Internal sales &amp; support</strong></td>
+<td>"Another module to explain on a crowded call."</td>
+<td>One question to ask: how fast do their reviews get answered today?</td>
+<td>One-page battlecard, 4-minute demo script</td>
+<td>Use the discovery question</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>8. Launch plan</h2>
+<h3>Phase 1 · T−6 to T−3 weeks — Readiness</h3>
+<p><strong>Objective:</strong> get the story straight before anyone tries to sell it.</p>
+<ul>
+<li>Positioning statement signed off by product and sales (not circulated — signed off)</li>
+<li>Pricing modelled against partner margin; wholesale set at 51%</li>
+<li>Competitive archetypes documented, including the status-quo case</li>
+<li><strong>Success metrics and targets agreed in writing</strong> — before launch, so success could not be
+  redefined afterwards. This is the step most launches skip and the reason most launch retros are
+  arguments.</li>
+</ul>
+<h3>Phase 2 · T−2 weeks — Partner beta</h3>
+<p><strong>Objective:</strong> find out what breaks, from people who will say so.</p>
+<ul>
+<li>12 partners, ~40 accounts, one week of structured feedback</li>
+<li>Deliberately recruited the partners most likely to complain loudly</li>
+<li><strong>Two changes came out of it:</strong> approval workflow moved to on-by-default, and the client-facing
+  report was rebuilt around <em>response time</em> rather than review volume</li>
+</ul>
+<h3>Phase 3 · Launch week — Go live</h3>
+<p><strong>Objective:</strong> enablement first, announcement second.</p>
+<p>Shipped to partner reps <em>before</em> the customer announcement:</p>
+<ul>
+<li>One-page battlecard (positioning, discovery question, objections, pricing)</li>
+<li>4-minute demo script with the report as the closing frame</li>
+<li>Pricing calculator showing partner margin per client</li>
+<li>Objection sheet</li>
+</ul>
+<p>Then, and only then: in-app announcement, partner webinar, help-centre articles, email to active
+accounts.</p>
+<h3>Phase 4 · Weeks 2–13 — Scale</h3>
+<ul>
+<li>Weekly scorecard: attach rate, demos, closed-won, reps enabled</li>
+<li>Fortnightly reallocation of enablement effort toward lagging partner tiers</li>
+<li>Re-run enablement for lagging tiers rather than assuming the first session landed</li>
+<li><strong>Co-marketing kit for partners landed in week 5 — too late.</strong> Consequences in Section 10.</li>
+</ul>
+<hr />
+<h2>9. Measurement framework and 90-day results</h2>
+<p>Targets were fixed pre-launch. Actuals computed from <code>launch_scorecard_90day.csv</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Target</th>
+<th>Actual</th>
+<th>Variance</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Module attach rate (weeks 10–13)</td>
+<td>55.0%</td>
+<td><strong>61.7%</strong></td>
+<td>+12.2%</td>
+<td>Beat</td>
+</tr>
+<tr>
+<td>Partner reps enabled</td>
+<td>275</td>
+<td><strong>284</strong></td>
+<td>+3.3%</td>
+<td>Beat</td>
+</tr>
+<tr>
+<td>Demos booked</td>
+<td>900</td>
+<td><strong>770</strong></td>
+<td>−14.4%</td>
+<td>Missed</td>
+</tr>
+<tr>
+<td>Closed-won accounts</td>
+<td>185</td>
+<td><strong>169</strong></td>
+<td>−8.6%</td>
+<td>Near</td>
+</tr>
+<tr>
+<td>Module MRR added</td>
+<td>$9,500</td>
+<td><strong>$8,562</strong></td>
+<td>−9.9%</td>
+<td>Near</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Leading vs lagging.</strong> Attach rate and enablement are leading indicators and both beat plan. Demos
+and closed-won are lagging and both missed. That pattern is diagnostic: the offer and the enablement
+worked; the pipeline feeding them did not.</p>
+<p><strong>What the weekly view shows.</strong> Attach rate crossed target in week 9 and held, which fits the
+default-on trial hypothesis. Demo volume was flat for the first four weeks and only inflected after
+the co-marketing kit shipped in week 5 — partners were enabled but had nothing to run a campaign with.</p>
+<p><strong>Secondary metrics tracked:</strong> trial-to-paid on the module, replies published per account, median
+response time before and after enabling, module-level churn at day 60.</p>
+<hr />
+<h2>10. Retrospective</h2>
+<h3>What worked</h3>
+<ol>
+<li><strong>Trial on by default.</strong> The highest-leverage decision in the launch. It converted the partner's
+   task from selling something new to retaining something in use.</li>
+<li><strong>Enablement before announcement.</strong> Partner reps were never the bottleneck — the first inbound
+   question always had an answer waiting.</li>
+<li><strong>Targets agreed in writing pre-launch.</strong> Made the shortfall diagnosable instead of arguable.</li>
+<li><strong>Recruiting difficult partners into beta.</strong> The two changes they forced (approval default, report
+   redesign) both showed up in the results.</li>
+</ol>
+<h3>What did not work</h3>
+<ol>
+<li><strong>Demand generation lagged enablement by five weeks.</strong> Demos finished 14% under target. Partners
+   were ready and had nothing to run.</li>
+<li><strong>Revenue followed demand, not readiness.</strong> $8,562 against a $9,500 target, despite attach rate
+   beating plan by 12%.</li>
+<li><strong>Priority 3 pricing was never tested.</strong> The most price-sensitive segment received the least
+   attention, and there is no data to say whether $39 is right for a single location.</li>
+</ol>
+<h3>What I would change</h3>
+<ol>
+<li><strong>Treat the partner co-marketing kit as a launch blocker,</strong> not a phase-two asset. No launch date
+   without it.</li>
+<li><strong>Add a demand-side target</strong> — booked demos per enabled rep per week — so the scorecard cannot
+   look healthy while pipeline is flat. This is the specific measurement failure: every target was a
+   supply-side or conversion metric.</li>
+<li><strong>Run a pricing test on the single-location segment during the beta window,</strong> when it is still
+   cheap to change.</li>
+</ol>
+<hr />
+<h2>Appendix A — Assumptions</h2>
+<table>
+<thead>
+<tr>
+<th>Assumption</th>
+<th>Value</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Average account MRR</td>
+<td>$149</td>
+<td>Platform average plan price</td>
+</tr>
+<tr>
+<td>Module ARPA uplift where attached</td>
+<td>~$50</td>
+<td>$39 retail with a multi-location blend</td>
+</tr>
+<tr>
+<td>Gross margin</td>
+<td>72%</td>
+<td>Used for payback calculations</td>
+</tr>
+<tr>
+<td>Active accounts in scope</td>
+<td>~2,800</td>
+<td>Accounts with a connected review profile</td>
+</tr>
+<tr>
+<td>Partner reps in scope</td>
+<td>~340</td>
+<td>Reps at partners with 5+ active clients</td>
+</tr>
+</tbody>
+</table>
+<h2>Appendix B — Discovery questions for partner reps</h2>
+<ol>
+<li>How fast do your clients' reviews get answered today? <em>(Makes the status quo measurable.)</em></li>
+<li>Who writes the replies — you, or the client?</li>
+<li>Which client asked you about their rating most recently?</li>
+<li>Do you bill for review management today? If not, why not?</li>
+<li>Would you need to approve replies before they post? <em>(Qualifies the approval-workflow objection early.)</em></li>
+</ol>
+<h2>Appendix C — Battlecard summary</h2>
+<ul>
+<li><strong>One-line pitch:</strong> Every review gets a reply, drafted for you, reported to your client.</li>
+<li><strong>Lead metric:</strong> median response time, then reply coverage per location.</li>
+<li><strong>Never lead with:</strong> "AI-powered". Lead with the time problem.</li>
+<li><strong>Price:</strong> $39/location retail, $19 wholesale, 51% partner margin.</li>
+<li><strong>Disqualify if:</strong> no public review profiles, or approval workflow is a hard no for legal reasons.</li>
+<li><strong>Most common loss reason:</strong> inertia. Always quantify the current response time first.</li>
+</ul>
+<hr />
+<h2>Files in this project</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project-1-gtm-launch.html</code></td>
+<td>Interactive launch brief with the weekly scorecard charts</td>
+</tr>
+<tr>
+<td><code>launch_scorecard_90day.csv</code></td>
+<td>13 weeks × demos, wins, attach rate, reps enabled, module MRR</td>
+</tr>
+<tr>
+<td><code>GTM-Strategy-Reputation-AI.md</code></td>
+<td>This document</td>
+</tr>
+</tbody>
+</table>
+    <div class="pnav" style="margin-top:48px">
+      <a class="pv" href="project-1-gtm-launch.html"><span class="d">← Back to</span>
+        <span class="t">P1 · The case study, with the 90-day scorecard</span></a>
+      <a class="nx" href="GTM-Strategy-Reputation-AI.md"><span class="d">Markdown source →</span>
+        <span class="t">GTM-Strategy-Reputation-AI.md</span></a>
+    </div>
+  </div>
+</main>
+
+<footer><div class="shell">
+  <p class="eyebrow" style="margin-bottom:8px">RP Karthigayan · Marketing operations &amp; growth analytics</p>
+  <p class="small" style="margin:0">karthickoffical2009@gmail.com · +91 7448958006 · Chennai, India</p>
+  <p class="tiny" style="margin-top:22px">Simulated launch scenario built to demonstrate GTM method.
+  Competitors are described as archetypes rather than named vendors.</p>
+</div></footer>
+</body>
+</html>
